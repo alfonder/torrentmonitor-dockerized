@@ -10,6 +10,7 @@ MAINTAINER Siarhei Navatski <navatski@gmail.com>, Andrey Aleksandrov <alex.demio
 ENV VERSION="1.6.7" \
     RELEASE_DATE="11.06.2017" \
     CRON_TIMEOUT="0 * * * *" \
+    CRON_COMMAND="php -q /data/htdocs/engine.php >> /var/log/nginx/torrentmonitor_cron_error.log 2>\&1" \
     PHP_TIMEZONE="UTC" \
     PHP_MEMORY_LIMIT="512M" \
     LD_PRELOAD="/usr/local/lib/preloadable_libiconv.so"
