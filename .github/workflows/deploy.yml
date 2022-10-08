@@ -86,13 +86,24 @@ jobs:
           repository: ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
           short-description: ${{ github.event.repository.description }}
 
+      - name: Skip Telegram notification
+        shell: bash
+        env:
+          telegram_to: ${{ secrets.TELEGRAM_TO }}
+        if: ${{ env.telegram_to == '' }}
+        run: |
+          echo "Telegram SECRETS not defined, skip Telegram notification"
+
       - name: Notify on Telegram
         uses: appleboy/telegram-action@v0.1.1
+        env:
+          telegram_to: ${{ secrets.TELEGRAM_TO }}
+        if: ${{ env.telegram_to != '' }}
         with:
-            to: ${{ secrets.TELEGRAM_TO }}
-            token: ${{ secrets.TELEGRAM_TOKEN }}
-            message: |
-                New Docker image is built and pushed:
-                ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.git.outputs.image_tag }}
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+              New Docker image is built and pushed:
+              ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.git.outputs.image_tag }}
 
-                https://hub.docker.com/r/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+              https://hub.docker.com/r/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}

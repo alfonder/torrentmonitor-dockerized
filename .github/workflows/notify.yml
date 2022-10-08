@@ -10,9 +10,19 @@ jobs:
   notify-on-telegram:
     runs-on: ubuntu-latest
     steps:
+      - name: Skip Telegram notification
+        shell: bash
+        env:
+          telegram_to: ${{ secrets.TELEGRAM_TO }}
+        if: ${{ env.telegram_to == '' }}
+        run: |
+          echo "Telegram SECRETS not defined, skip Telegram notification"
 
       - name: Notify on Telegram
         uses: appleboy/telegram-action@v0.1.1
+        env:
+          telegram_to: ${{ secrets.TELEGRAM_TO }}
+        if: ${{ env.telegram_to != '' }}
         with:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
@@ -24,5 +34,3 @@ jobs:
             https://github.com/${{ github.repository }}/pulls
             or
             https://github.com/${{ github.repository }}/issues
-
-# vi:et:sw=2
