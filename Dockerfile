@@ -1,4 +1,5 @@
-FROM alpine:3.15.4 as rootfs-builder
+# rootfs builder
+FROM alpine:3.15.6 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -16,7 +17,8 @@ RUN apk --no-cache add \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite && \
     mkdir -p /rootfs/var/log/nginx/
 
-FROM alpine:3.15.4
+# Main image
+FROM alpine:3.15.6
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 
 ENV VERSION="1.8.9.8" \
