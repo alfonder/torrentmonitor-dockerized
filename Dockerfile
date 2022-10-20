@@ -2,14 +2,13 @@ FROM alpine:3.15.4 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
+ADD http://korphome.ru/torrent_monitor/tm-latest.zip /tmp/tm-latest.zip
 
 RUN apk --no-cache add \
-        wget \
         unzip \
         sqlite \
         patch \
         && \
-    wget -q http://korphome.ru/torrent_monitor/tm-latest.zip -O /tmp/tm-latest.zip && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     patch -p1 -d /tmp -i /tmp/tm_ext_settings_fix.patch && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
