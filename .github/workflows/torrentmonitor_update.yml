@@ -25,8 +25,8 @@ jobs:
           DATE=$(head -n 1 /tmp/TorrentMonitor-master/changelog.txt | awk '{print $1;}')
           echo "::set-output name=date::${DATE}"
 
-          sed "s/\(ENV VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" < Dockerfile > /tmp/Dockerfile.tmp
-          sed "s/\(    RELEASE_DATE=*\)[^ ]*/\1\"${DATE}\"/" < /tmp/Dockerfile.tmp > Dockerfile
+          sed -i "s/\(ENV VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" Dockerfile
+          sed -i "s/\(    RELEASE_DATE=*\)[^ ]*/\1\"${DATE}\"/" Dockerfile
 
           PR_BRANCH="tmupdatebot/torrentmonitorupdate-${TM_VERSION}"
           echo "::set-output name=pr_branch::${PR_BRANCH}"
