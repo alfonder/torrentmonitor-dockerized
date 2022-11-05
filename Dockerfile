@@ -18,8 +18,8 @@ RUN apk --no-cache add \
 FROM alpine:3.15.4
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 
-ENV VERSION="1.8.9.8" \
-    RELEASE_DATE="27.09.2022" \
+ENV VERSION="1.8.9.9" \
+    RELEASE_DATE="5.10.2022" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php >> /var/log/nginx/torrentmonitor_cron_error.log 2>&1" \
     PHP_TIMEZONE="UTC" \
