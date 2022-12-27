@@ -1,7 +1,7 @@
 [![Latest Image](https://img.shields.io/docker/v/alfonder/torrentmonitor?color=lightgreen&label=latest)](https://hub.docker.com/r/alfonder/torrentmonitor)
 [![Image](https://img.shields.io/docker/image-size/alfonder/torrentmonitor?sort=semver)](https://hub.docker.com/r/alfonder/torrentmonitor)
-[![Build Status](https://img.shields.io/github/workflow/status/alfonder/torrentmonitor-dockerized/Build%20and%20Deploy%20image?logo=github)](https://github.com/alfonder/torrentmonitor-dockerized/actions/workflows/deploy.yml)
-[![License](https://img.shields.io/github/license/alfonder/torrentmonitor-dockerized)](https://github.com/alfonder/torrentmonitor-dockerized)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/alfonder/torrentmonitor-dockerized/deploy.yml?logo=github)](https://github.com/alfonder/torrentmonitor-dockerized/actions/workflows/deploy.yml)
+[![Last Commit](https://img.shields.io/github/last-commit/alfonder/torrentmonitor-dockerized?logo=github)](https://github.com/alfonder/torrentmonitor-dockerized)
 
 Dockerized torrentmonitor
 ========
