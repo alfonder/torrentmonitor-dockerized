@@ -12,18 +12,17 @@ RUN apk --no-cache add \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
-    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite && \
-    mkdir -p /rootfs/var/log/nginx/
+    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
 FROM alpine:3.15.6
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
-LABEL org.opencontainers.image.source="https://github.com/changonux/torrentmonitor-dockerized/"
+LABEL org.opencontainers.image.source="https://github.com/alfonder/torrentmonitor-dockerized/"
 
 ENV VERSION="2.1.4" \
     RELEASE_DATE="26.10.2024" \
     CRON_TIMEOUT="0 * * * *" \
-    CRON_COMMAND="php -q /data/htdocs/engine.php >> /var/log/nginx/torrentmonitor_cron_error.log 2>&1" \
+    CRON_COMMAND="php -q /data/htdocs/engine.php >> /proc/1/fd/1 2>&1" \
     PHP_TIMEZONE="UTC" \
     PHP_MEMORY_LIMIT="512M" \
     LD_PRELOAD="/usr/lib/preloadable_libiconv.so"
@@ -49,10 +48,7 @@ RUN apk --no-cache add \
         php7-zip \
         php7-dom \
         && \
-    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/ && \
-    ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log && \
-    ln -sf /dev/stdout /var/log/php-fpm.log
+    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/
 
 LABEL ru.korphome.version="${VERSION}" \
       ru.korphome.release-date="${RELEASE_DATE}"
