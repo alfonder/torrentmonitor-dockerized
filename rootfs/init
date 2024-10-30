@@ -38,6 +38,6 @@ test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm7 /usr/bin/php-fpm
 test -f /usr/bin/php || ln -s /usr/bin/php7 /usr/bin/php
 
 # Start apps
-crond
 php-fpm
-nginx -g 'daemon off;'
+nginx -g 'daemon off;' &
+crond -f >> /proc/1/fd/1
