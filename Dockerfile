@@ -32,23 +32,25 @@ COPY --from=rootfs-builder /rootfs/ /
 RUN apk --no-cache add \
         nginx \
         shadow \
-        php7 \
-        php7-common \
-        php7-fpm \
-        php7-curl \
-        php7-sqlite3 \
-        php7-pdo_sqlite \
-        php7-xml \
-        php7-json \
-        php7-simplexml \
-        php7-session \
-        php7-iconv \
-        php7-mbstring \
-        php7-ctype \
-        php7-zip \
-        php7-dom \
+        php83 \
+        php83-common \
+        php83-fpm \
+        php83-curl \
+        php83-sqlite3 \
+        php83-pdo_sqlite \
+        php83-xml \
+        php83-simplexml \
+        php83-session \
+        php83-iconv \
+        php83-mbstring \
+        php83-ctype \
+        php83-zip \
+        php83-dom \
         && \
-    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/
+    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/ ; \
+    test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm83 /usr/bin/php-fpm ; \
+    test -f /usr/bin/php || ln -s /usr/bin/php83 /usr/bin/php ; \
+    test -e /etc/php || ln -s /etc/php83 /etc/php
 
 LABEL ru.korphome.version="${VERSION}" \
       ru.korphome.release-date="${RELEASE_DATE}"
