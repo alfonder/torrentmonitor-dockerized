@@ -24,7 +24,8 @@ ENV VERSION="2.1.6" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
-    PHP_MEMORY_LIMIT="512M"
+    PHP_MEMORY_LIMIT="512M" \
+    LD_PRELOAD="/usr/lib/preloadable_libiconv.so"
 
 COPY --from=rootfs-builder /rootfs/ /
 
@@ -45,7 +46,8 @@ RUN apk --no-cache add \
         php83-ctype \
         php83-zip \
         php83-dom \
-        ; \
+        && \
+    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/ ; \
     test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm83 /usr/bin/php-fpm ; \
     test -f /usr/bin/php || ln -s /usr/bin/php83 /usr/bin/php ; \
     test -e /etc/php || ln -s /etc/php83 /etc/php
