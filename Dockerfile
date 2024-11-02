@@ -33,25 +33,25 @@ COPY --from=rootfs-builder /rootfs/ /
 RUN apk --no-cache add \
         nginx \
         shadow \
-        php83 \
-        php83-common \
-        php83-fpm \
-        php83-curl \
-        php83-sqlite3 \
-        php83-pdo_sqlite \
-        php83-xml \
-        php83-simplexml \
-        php83-session \
-        php83-iconv \
-        php83-mbstring \
-        php83-ctype \
-        php83-zip \
-        php83-dom \
+        php82 \
+        php82-common \
+        php82-fpm \
+        php82-curl \
+        php82-sqlite3 \
+        php82-pdo_sqlite \
+        php82-xml \
+        php82-simplexml \
+        php82-session \
+        php82-iconv \
+        php82-mbstring \
+        php82-ctype \
+        php82-zip \
+        php82-dom \
         && \
     apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/ ; \
-    test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm83 /usr/bin/php-fpm ; \
-    test -f /usr/bin/php || ln -s /usr/bin/php83 /usr/bin/php ; \
-    test -e /etc/php || ln -s /etc/php83 /etc/php
+    test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm82 /usr/bin/php-fpm ; \
+    test -f /usr/bin/php || ln -s /usr/bin/php82 /usr/bin/php ; \
+    test -e /etc/php || ln -s /etc/php82 /etc/php
 
 LABEL ru.korphome.version="${VERSION}" \
       ru.korphome.release-date="${RELEASE_DATE}"
