@@ -1,0 +1,13 @@
+diff --git a/trackers/kinozal.guru.engine.php b/trackers/kinozal.guru.engine.php
+index 19cf8c4..d25996d 100755
+--- a/trackers/kinozal.guru.engine.php
++++ b/trackers/kinozal.guru.engine.php
+@@ -98,7 +98,7 @@ class kinozal
+ 	}	
+ 
+ 	//функция получения кук
+-	protected static function getCookie($tracker)
++	public static function getCookie($tracker)
+ 	{
+ 		//проверяем заполнены ли учётные данные
+ 		if (Database::checkTrackersCredentialsExist($tracker))
