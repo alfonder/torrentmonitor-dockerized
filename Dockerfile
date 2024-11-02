@@ -12,6 +12,7 @@ RUN apk --no-cache add \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     patch -p1 -d /tmp/TorrentMonitor-master -i /tmp/kinozal-guru-cookie-fix.patch && \
+    patch -p1 -d /tmp/TorrentMonitor-master -i /tmp/kinozal-guru-debug.patch && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 

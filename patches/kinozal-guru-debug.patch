@@ -1,0 +1,13 @@
+diff --git a/class/System.class.php b/class/System.class.php
+index e5d2315..2a3eab2 100755
+--- a/class/System.class.php
++++ b/class/System.class.php
+@@ -351,6 +351,8 @@ class Sys
+                 )
+             );
+         }
++        
++        file_put_contents('var_dump.txt', $forumPage);
+ 
+         if ($tracker != 'animelayer.ru' && $tracker != 'booktracker.org' && $tracker != 'casstudio.tk' && $tracker != 'riperam.org' && $tracker != 'rustorka.com' && $tracker != 'rutor.is' && $tracker != 'tr.anidub.com')
+             $forumPage = iconv('windows-1251', 'utf-8//IGNORE', $forumPage);
