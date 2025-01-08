@@ -1,5 +1,5 @@
 # rootfs builder
-FROM alpine:3.16.3 as rootfs-builder
+FROM alpine:3.21.1 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -16,7 +16,7 @@ RUN apk --no-cache add \
     mkdir -p /rootfs/var/log/nginx/
 
 # Main image
-FROM alpine:3.16.3
+FROM alpine:3.21.1
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 
 ENV VERSION="1.8.9.9" \
