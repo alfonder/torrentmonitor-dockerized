@@ -1,3 +1,24 @@
+# apk builder
+FROM alpine:3.15.6 as apk-builder
+
+RUN apk --no-cache add \
+    alpine-sdk \
+    sudo \
+    && \
+    adduser -D builduser && \
+    addgroup builduser abuild && \
+    addgroup builduser wheel && \
+    echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel && \
+    chmod 0400 /etc/sudoers.d/wheel
+
+USER builduser
+WORKDIR /home/builduser
+
+RUN abuild-keygen -an -i -q && \
+    wget https://gitlab.alpinelinux.org/alpine/aports/-/raw/3.13-stable/community/gnu-libiconv/APKBUILD && \
+    abuild checksum && \
+    abuild -r
+
 # rootfs builder
 FROM alpine:3.15.6 as rootfs-builder
 
@@ -28,6 +49,7 @@ ENV VERSION="2.1.8" \
     LD_PRELOAD="/usr/lib/preloadable_libiconv.so"
 
 COPY --from=rootfs-builder /rootfs/ /
+COPY --from=apk-builder /home/builduser/packages /tmp/packages
 
 RUN apk --no-cache add \
         nginx \
@@ -48,7 +70,9 @@ RUN apk --no-cache add \
         php7-zip \
         php7-dom \
         && \
-    apk add gnu-libiconv=1.15-r3 --update-cache --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/community/
+    apk --allow-untrusted add /tmp/packages/home/*/gnu-libiconv-1.15-r3.apk && \
+    rm -rf /tmp/* && \
+    rm -rf /var/cache/apk/*
 
 LABEL ru.korphome.version="${VERSION}" \
       ru.korphome.release-date="${RELEASE_DATE}"
