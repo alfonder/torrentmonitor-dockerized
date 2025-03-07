@@ -1,5 +1,5 @@
 # apk builder
-FROM alpine:3.15.6 as apk-builder
+FROM alpine:3.15.6 AS apk-builder
 
 RUN apk --no-cache add \
     alpine-sdk \
@@ -20,7 +20,7 @@ RUN abuild-keygen -an -i -q && \
     abuild -r
 
 # rootfs builder
-FROM alpine:3.15.6 as rootfs-builder
+FROM alpine:3.15.6 AS rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
