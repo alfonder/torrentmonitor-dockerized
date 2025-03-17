@@ -2,9 +2,9 @@
 FROM alpine:3.15.6 AS apk-builder
 
 RUN apk --no-cache add \
-    alpine-sdk \
-    sudo \
-    && \
+        alpine-sdk \
+        sudo \
+        && \
     adduser -D builduser && \
     addgroup builduser abuild && \
     addgroup builduser wheel && \
