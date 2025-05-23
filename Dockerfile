@@ -3,7 +3,7 @@ FROM alpine:3.21.3 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
-ADD https://tormon.ru/tm-latest.zip /tmp/tm-latest.zip
+ADD https://github.com/ElizarovEugene/TorrentMonitor/archive/refs/heads/master.zip /tmp/tm-latest.zip
 
 RUN apk --no-cache add \
         unzip \
@@ -20,8 +20,8 @@ FROM alpine:3.21.3
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 LABEL org.opencontainers.image.source="https://github.com/alfonder/torrentmonitor-dockerized/"
 
-ENV VERSION="2.1.6" \
-    RELEASE_DATE="16.11.2024" \
+ENV VERSION="2.1.8" \
+    RELEASE_DATE="16.05.2025" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
