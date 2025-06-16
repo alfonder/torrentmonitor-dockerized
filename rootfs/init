@@ -1,4 +1,36 @@
-#!/bin/sh
+#!/bin/bash
+
+PHP_FILE="/data/htdocs/class/qBittorrent.class.php"
+
+if [[ -n "$QBITTORRENT_CATEGORY" ]]; then
+  # Find indentation from the 'root_folder' line
+  INDENT=$(grep -m1 "'root_folder'" "$PHP_FILE" | sed -n 's/^\([[:space:]]*\).*root_folder.*/\1/p')
+  NEW_LINE="${INDENT}'category' => '${QBITTORRENT_CATEGORY}',"
+  if grep -q "'category'" "$PHP_FILE"; then
+    CURRENT_LINE=$(grep "'category'" "$PHP_FILE" | head -n1 | sed 's/^[ \t]*//;s/,$//')
+    EXPECTED_LINE="'category' => '${QBITTORRENT_CATEGORY}'"
+    if [[ "$CURRENT_LINE" != "$EXPECTED_LINE" ]]; then
+      ESCAPED_LINE=$(printf "%s\n" "$NEW_LINE" | sed -e 's/[\/&]/\\&/g')
+      sed -i "/'category'/s/^[[:space:]]*.*'category' => .*$/$(echo "$ESCAPED_LINE")/" "$PHP_FILE"
+    fi
+  else
+    # Ensure 'root_folder' line ends with a comma
+    if grep -q "'root_folder' => true[^,]*$" "$PHP_FILE"; then
+      sed -i "s/\('root_folder' => true\)[[:space:]]*$/\1,/" "$PHP_FILE"
+    fi
+    # Escape and insert the category line after 'root_folder'
+    ESCAPED_LINE=$(printf "%s\n" "$NEW_LINE" | sed -e 's/[\/&]/\\&/g')
+    sed -i "/'root_folder' => true,/a\\
+${ESCAPED_LINE}
+" "$PHP_FILE"
+  fi
+else
+  # Remove 'category' line
+  if grep -q "'category'" "$PHP_FILE"; then
+    sed -i "/'category' => .*,\{0,1\}[[:space:]]*$/d" "$PHP_FILE"
+    sed -i "s/\('root_folder' => true\),[[:space:]]*$/\1/" "$PHP_FILE"
+  fi
+fi
 
 # Populate database if not exists
 test -f /data/htdocs/db/tm.sqlite || cp /data/htdocs/db_schema/tm.sqlite /data/htdocs/db/tm.sqlite
