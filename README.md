@@ -3,15 +3,17 @@
 [![Build Status](https://img.shields.io/github/actions/workflow/status/alfonder/torrentmonitor-dockerized/deploy.yml?logo=github)](https://github.com/alfonder/torrentmonitor-dockerized/actions/workflows/deploy.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/alfonder/torrentmonitor-dockerized?logo=github)](https://github.com/alfonder/torrentmonitor-dockerized)
 
-Dockerized torrentmonitor
-========
-[[RU]](./README-RU.md)
+# TorrentMonitor Dockerized
 
-Info about the project - https://github.com/ElizarovEugene/TorrentMonitor
+[[Русская версия]](./README-RU.md)
 
-### Supported torrent trackers
+A Docker container for [TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor), a web app for tracking and downloading torrents from multiple trackers.
 
-#### Theme update tracking:
+---
+
+## Supported Trackers
+
+**Theme update tracking:**
 - anidub.com
 - animelayer.ru
 - baibako.tv
@@ -29,165 +31,205 @@ Info about the project - https://github.com/ElizarovEugene/TorrentMonitor
 - **rutracker.org**
 - tfile.cc
 
-#### Release group update tracking:
+**Release group update tracking:**
 - booktracker.org
 - nnm-club.ru
 - pornolab.net
 - rutracker.org
 - tfile.me
 
-#### Feed scraping:
+**Feed scraping:**
 - baibako.tv
 - hamsterstudio.org
-- lostfilm.tv (+ собственное заркало)
+- lostfilm.tv (+ own mirror)
 - newstudio.tv
 
+---
 
-### Credits
-Many thanks to [nawa](https://github.com/nawa) who had started 'torrentmonitor-dockerized' project back several years ago. His great job made me fork this project when he stopped support it.
+## Credits
 
-## How to Use
+Special thanks to [nawa](https://github.com/nawa) for starting the original 'torrentmonitor-dockerized' project, which inspired this fork.
+
+---
+
+## Getting Started
 
 ### Basic Usage
-1. Install docker https://docs.docker.com/engine/install/
-2. Depending on your system type you need to run `docker` command with `sudo` or add the user to "docker" group
-3. Get the container image from DockerHub: 
 
-		docker pull alfonder/torrentmonitor:latest
+1. **Install Docker:**  
+   [Docker installation guide](https://docs.docker.com/engine/install/)
 
-<details>
-  <summary>Alternative way (get the image from GitHub Registry):</summary>
+2. **Permissions:**  
+   Use `sudo` with Docker commands or add your user to the `docker` group.
 
-		docker pull ghcr.io/alfonder/torrentmonitor:latest
-</details>
+3. **Pull the image:**  
+   From DockerHub:
+   ```bash
+   docker pull alfonder/torrentmonitor:latest
+   ```
+   Or from GitHub Registry:
+   ```bash
+   docker pull ghcr.io/alfonder/torrentmonitor:latest
+   ```
 
-4. Create persistent volumes:
+4. **Create persistent volumes:**
+   ```bash
+   docker volume create torrentfiles
+   docker volume create db
+   ```
 
-		docker volume create torrentfiles
-		docker volume create db
+5. **Run the container:**
+   ```bash
+   docker container run -d \
+     --name torrentmonitor \
+     --restart unless-stopped \
+     -p 8080:80 \
+     -v torrentfiles:/data/htdocs/torrents \
+     -v db:/data/htdocs/db \
+     alfonder/torrentmonitor
+   ```
+   Your data will persist even if you delete or recreate the container.
 
-5. Run container:
+6. **Access the web interface:**  
+   Open [http://localhost:8080](http://localhost:8080) in your browser.
 
-		docker container run -d \
-			--name torrentmonitor \
-			--restart unless-stopped \
-			-p 8080:80 \
-			-v torrentfiles:/data/htdocs/torrents \
-			-v db:/data/htdocs/db \
-			alfonder/torrentmonitor
-	You will not lose your data on delete/re-create containers
+7. **Configure and use the application.**
 
-6. Open browser on page [http://localhost:8080](http://localhost:8080)
-7. Configure the web application and enjoy
+---
 
 ### Advanced Usage
-- you can change server port from `8080` to your preferred port (`-p` option)
-- also you can specify environment variables to change default behaviour of container 
-	- `CRON_TIMEOUT="0 */3 * * *"` Specify execution timeout in [crontab format](https://crontab.guru/examples.html). Default - every hour.
-	- `CRON_COMMAND="<...>"` Specify custom command to update torrents, e.g. for alternate logging. Default: `"php -q /data/htdocs/engine.php"`
-	- `PHP_TIMEZONE="Europe/Moscow"` Set default timezone for PHP. Default - UTC.
-	- `PHP_MEMORY_LIMIT="512M"` Set php memory limit. Default - 512M.
-	- `PUID=<number>` Set user ID for file ownership.
-	- `PGUD=<number>` Set group ID for file ownership.
-- if you want guest system to have host's timezone, add `localtime` binding as in the example below.
 
-#### Example:
+- Change the server port by editing the `-p` option.
+- Set environment variables to customize behavior:
+  - `CRON_TIMEOUT="0 */3 * * *"` — Cron schedule (default: every hour)
+  - `CRON_COMMAND="<...>"` — Custom update command (default: `php -q /data/htdocs/engine.php`)
+  - `PHP_TIMEZONE="Europe/Moscow"` — PHP timezone (default: UTC)
+  - `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
+  - `PUID=<number>` — User ID for file ownership
+  - `PGID=<number>` — Group ID for file ownership
+- To use the host's timezone, add a localtime binding.
 
-	docker container run -d \
-			--name torrentmonitor \
-			--restart unless-stopped \
-			-p 8080:80 \
-			-v <path_to_torrents_folder>:/data/htdocs/torrents \
-			-v <path_to_db_folder>:/data/htdocs/db \
-			-v /etc/localtime:/etc/localtime:ro \
-			-e PHP_TIMEZONE="Europe/Moscow" \
-			-e CRON_TIMEOUT="15 8-23 * * *" \
-			-e PUID=1001 \
-			-e PGID=1000 \
-			alfonder/torrentmonitor
-
-### Compose
-If you prefer using `docker-compose`, create a yaml script file [docker-compose.yml](docker-compose.yml):
-```yaml
-version: '3'
-
-services:
-  torrentmonitor:
-    container_name: ${SERVICENAME}
-    image: alfonder/torrentmonitor:${TM_TAG}
-    restart: unless-stopped
-    ports:
-      - ${LISTEN_PORT}:80
-    volumes:
-      - ${DATA_DIR}/torrents:/data/htdocs/torrents
-      - ${DATA_DIR}/db:/data/htdocs/db
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      - PHP_TIMEZONE=${TIMEZONE}
-      - CRON_TIMEOUT=${SCHEDULE}
+**Example:**
+```bash
+docker container run -d \
+  --name torrentmonitor \
+  --restart unless-stopped \
+  -p 8080:80 \
+  -v <path_to_torrents_folder>:/data/htdocs/torrents \
+  -v <path_to_db_folder>:/data/htdocs/db \
+  -v /etc/localtime:/etc/localtime:ro \
+  -e PHP_TIMEZONE="Europe/Moscow" \
+  -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e PUID=1001 \
+  -e PGID=1000 \
+  alfonder/torrentmonitor
 ```
-and env config file [.env](.env) with your values:
-```shell
-# Specific image tag
-TM_TAG=latest
 
-# Container name to use via CLI
-SERVICENAME=torrentmonitor
+---
 
-# Port for web-interface
-LISTEN_PORT=8081
+### Using Docker Compose
 
-# Directory for container's persistent data
-DATA_DIR=/media/volume1/data/torrentmonitor
+You can run TorrentMonitor with either classic Docker Compose (`docker-compose`) or Docker Compose v2 (`docker compose`). Both methods are supported.
 
-# Service start schedule in Cron format
-SCHEDULE="*/30 8-22 * * *"
+#### Docker Compose v2 (recommended)
 
-# TImezone for web-interface
-TIMEZONE="Europe/Moscow"
-```
-then run: 
+1. **Create a `docker-compose.yml` file:**
+   ```yaml
+   version: '3'
 
-	docker-compose up -d
+   services:
+     torrentmonitor:
+       container_name: torrentmonitor
+       image: alfonder/torrentmonitor:latest
+       restart: unless-stopped
+       ports:
+         - "8080:80"
+       volumes:
+         - ./torrents:/data/htdocs/torrents
+         - ./db:/data/htdocs/db
+         - /etc/localtime:/etc/localtime:ro
+       environment:
+         - PHP_TIMEZONE=Europe/Moscow
+         - CRON_TIMEOUT=0 * * * *
+   ```
 
-### Torrentmonitor + TOR + Transmission
-You can do ninja craft to run torrentmonitor with Transmission and TOR together. Use `docker-compose` with [script](examples/docker-compose.yml)
+2. **(Optional) Create a `.env` file** to override variables in your compose file:
+   ```env
+   PHP_TIMEZONE=Europe/Moscow
+   CRON_TIMEOUT=0 * * * *
+   ```
 
-### Additional
-The most useful commands - Stop/Start/Restart container:
+3. **Start the service:**
+   ```bash
+   docker compose up -d
+   ```
+
+4. **Stop the service:**
+   ```bash
+   docker compose down
+   ```
+
+#### Classic Docker Compose
+
+You can use the same `docker-compose.yml` file as above.
+
+1. **Start the service:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Stop the service:**
+   ```bash
+   docker-compose down
+   ```
+
+Both `docker compose` (v2) and `docker-compose` (classic) commands are supported. Use whichever matches your Docker installation.
+
+---
+
+### TorrentMonitor + TOR + Transmission
+
+You can run TorrentMonitor together with Transmission and TOR using `docker-compose`. See the [example script](examples/docker-compose.yml).
+
+---
+
+### Useful Commands
+
 ```bash
 docker container stop torrentmonitor
 docker container start torrentmonitor
 docker container restart torrentmonitor
 ```
 
+---
+
 ### Version Info
-To get the current running container version, you should run command:
-```
+
+To check the running container version:
+```bash
 docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' torrentmonitor
 ```
+
+---
+
 ## Platform Support
-There are images for almost all platform types, supported by Docker:
+
+Images are available for:
 - x86-64
 - x86
 - arm64
 - arm32
 - ppc64le
 
-Next platforms could be added upon request:
-- s390x
-- mips
+Other platforms (e.g., s390x, mips) can be added on request.
 
-If you use a platform that is not supported yet, file an issue. I'll add it ASAP.
+---
 
 ## OS Support
-### Linux
-Linux version uses `docker` directly. You don't have to download any sources or select right platform. Corresponding docker image will be downloaded from DockerHub (or GitHub Registry) automatically.
 
-### Windows and MacOS
-You can use Docker Desktop natively for supported OS versions. Minimal requirement:
-	
-- Windows 10 Professional or Enterprise 64-bit with Hyper-V support
-- MacOS Yosemite 10.10.3 or above
+**Linux:**  
+Use Docker directly. The correct image will be pulled automatically.
 
-Download docker native from https://www.docker.com/products/docker-desktop
+**Windows & macOS:**  
+Use Docker Desktop (Windows 10 Pro/Enterprise 64-bit with Hyper-V, or macOS Yosemite 10.10.3+).  
+[Download Docker Desktop](https://www.docker.com/products/docker-desktop)
