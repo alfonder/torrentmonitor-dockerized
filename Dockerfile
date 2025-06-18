@@ -30,7 +30,6 @@ ENV VERSION="2.1.8" \
 COPY --from=rootfs-builder /rootfs/ /
 
 RUN apk --no-cache add \
-        bash \
         nginx \
         shadow \
         php7 \
