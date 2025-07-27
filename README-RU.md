@@ -99,16 +99,46 @@
 
 ### Расширенное использование
 
-- Измените порт сервера через опцию `-p`.
-- Используйте переменные окружения для настройки:
-  - `CRON_TIMEOUT="0 */3 * * *"` — расписание cron (по умолчанию: каждый час)
-  - `CRON_COMMAND="<...>"` — команда обновления (по умолчанию: `php -q /data/htdocs/engine.php`)
-  - `PHP_TIMEZONE="Europe/Moscow"` — часовой пояс PHP (по умолчанию: UTC)
-  - `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
-  - `PUID=<номер>` — UID пользователя для прав на файлы
-  - `PGID=<номер>` — GID группы для прав на файлы
-  - `QBITTORRENT_CATEGORY="<категория>"` — категория qBittorrent для интеграции с Sonarr
-- Для использования часового пояса хоста добавьте монтирование localtime.
+#### Переменные окружения
+
+Вы можете настроить поведение TorrentMonitor с помощью этих переменных окружения:
+
+- `CRON_TIMEOUT="0 */3 * * *"` — расписание cron (по умолчанию: каждый час)
+- `CRON_COMMAND="<...>"` — команда обновления (по умолчанию: `php -q /data/htdocs/engine.php`)
+- `PHP_TIMEZONE="Europe/Moscow"` — часовой пояс PHP (по умолчанию: UTC)
+- `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
+- `PUID=<номер>` — UID пользователя для прав на файлы
+- `PGID=<номер>` — GID группы для прав на файлы
+- `QBITTORRENT_CATEGORY="<категория>"` — категория qBittorrent для интеграции с Sonarr
+
+#### Настройка порта
+
+Измените порт сервера через опцию `-p` в команде Docker.
+
+#### Настройка часового пояса
+
+Для использования часового пояса хоста добавьте монтирование localtime:
+```bash
+-v /etc/localtime:/etc/localtime:ro
+```
+
+#### Полный пример
+
+```bash
+docker container run -d \
+  --name torrentmonitor \
+  --restart unless-stopped \
+  -p 8080:80 \
+  -v <путь_к_папке_торрентов>:/data/htdocs/torrents \
+  -v <путь_к_папке_db>:/data/htdocs/db \
+  -v /etc/localtime:/etc/localtime:ro \
+  -e PHP_TIMEZONE="Europe/Moscow" \
+  -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e QBITTORRENT_CATEGORY="tv-sonarr" \
+  -e PUID=1001 \
+  -e PGID=1000 \
+  alfonder/torrentmonitor
+```
 
 #### Интеграция с Sonarr
 
@@ -125,23 +155,6 @@ TorrentMonitor поддерживает интеграцию с [Sonarr](https:/
    - Добавьте ту же страницу трекера (или лучшую альтернативу) в TorrentMonitor для мониторинга
    - TorrentMonitor будет отслеживать страницу трекера на предмет обновлений и загружать новые эпизоды в ту же категорию
    - Sonarr автоматически обнаружит новые эпизоды в категории и обработает их (переименует, переместит в библиотеку и т.д.)
-
-**Пример:**
-```bash
-docker container run -d \
-  --name torrentmonitor \
-  --restart unless-stopped \
-  -p 8080:80 \
-  -v <путь_к_папке_торрентов>:/data/htdocs/torrents \
-  -v <путь_к_папке_db>:/data/htdocs/db \
-  -v /etc/localtime:/etc/localtime:ro \
-  -e PHP_TIMEZONE="Europe/Moscow" \
-  -e CRON_TIMEOUT="15 8-23 * * *" \
-  -e QBITTORRENT_CATEGORY="tv-sonarr" \
-  -e PUID=1001 \
-  -e PGID=1000 \
-  alfonder/torrentmonitor
-```
 
 ---
 
