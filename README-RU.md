@@ -244,13 +244,14 @@ docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' t
 ## Поддерживаемые платформы
 
 Доступны образы для:
-- x86-64
-- x86
-- arm64
-- arm32
-- ppc64le
+- **x86-64** - 64-битные процессоры Intel/AMD, большинство ПК/серверов
+- **x86** - 32-битные процессоры Intel/AMD, старые ПК
+- **arm64** - 64-битные ARM процессоры (Raspberry Pi 4+, Raspberry Pi Compute Module 4, Apple Silicon Mac через Docker Desktop, AWS Graviton инстансы, платы NVIDIA Jetson, ODROID-N2+, Orange Pi 5, Rock Pi 4, Banana Pi M5)
+- **arm32v7** - 32-битные ARMv7 процессоры (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
+- **arm32v6** - 32-битные ARMv6 процессоры (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
+- **ppc64le** - процессоры IBM POWER (серверы IBM, мейнфреймы)
 
-Другие платформы (например, s390x, mips) — по запросу.
+Другие платформы — по запросу.
 
 ---
 

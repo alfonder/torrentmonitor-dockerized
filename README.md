@@ -248,13 +248,14 @@ docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' t
 ## Platform Support
 
 Images are available for:
-- x86-64
-- x86
-- arm64
-- arm32
-- ppc64le
+- **x86-64** - Intel/AMD 64-bit processors, most desktop/server PCs
+- **x86** - Intel/AMD 32-bit processors, older PCs
+- **arm64** - 64-bit ARM processors (Raspberry Pi 4+, Raspberry Pi Compute Module 4, Apple Silicon Macs via Docker Desktop, AWS Graviton instances, NVIDIA Jetson boards, ODROID-N2+, Orange Pi 5, Rock Pi 4, Banana Pi M5)
+- **arm32v7** - 32-bit ARMv7 processors (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
+- **arm32v6** - 32-bit ARMv6 processors (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
+- **ppc64le** - IBM POWER processors (IBM servers, mainframes)
 
-Other platforms (e.g., s390x, mips) can be added on request.
+Other platforms can be added on request.
 
 ---
 
