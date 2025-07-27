@@ -107,7 +107,24 @@ Special thanks to [nawa](https://github.com/nawa) for starting the original 'tor
   - `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
   - `PUID=<number>` — User ID for file ownership
   - `PGID=<number>` — Group ID for file ownership
+  - `QBITTORRENT_CATEGORY="<category>"` — qBittorrent category for Sonarr integration
 - To use the host's timezone, add a localtime binding.
+
+#### Sonarr Integration
+
+TorrentMonitor supports integration with [Sonarr](https://sonarr.tv/) through the `QBITTORRENT_CATEGORY` environment variable. This feature allows TorrentMonitor to work seamlessly with existing Sonarr + qBittorrent setups.
+
+**How to use:**
+1. **Prerequisites:** Ensure you have a working Sonarr + qBittorrent setup with a configured category (e.g., "tv-sonarr").
+2. **Configuration:** Configure both Sonarr and qBittorrent to NOT automatically delete completed torrents.
+3. **Setup TorrentMonitor:** Launch TorrentMonitor with the `QBITTORRENT_CATEGORY` environment variable matching your Sonarr category.
+4. **Workflow:** 
+   - Add a TV series to Sonarr
+   - Sonarr will automatically download a torrent to qBittorrent
+   - Remove the torrent from qBittorrent
+   - Add the same tracker page (or a better alternative) to TorrentMonitor for monitoring
+   - TorrentMonitor will watch the tracker page for updates and download new episodes to the same category
+   - Sonarr will automatically detect new episodes in the category and process them (rename, move to library, etc.)
 
 **Example:**
 ```bash
@@ -120,6 +137,7 @@ docker container run -d \
   -v /etc/localtime:/etc/localtime:ro \
   -e PHP_TIMEZONE="Europe/Moscow" \
   -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e QBITTORRENT_CATEGORY="tv-sonarr" \
   -e PUID=1001 \
   -e PGID=1000 \
   alfonder/torrentmonitor
@@ -151,12 +169,14 @@ You can run TorrentMonitor with either classic Docker Compose (`docker-compose`)
        environment:
          - PHP_TIMEZONE=Europe/Moscow
          - CRON_TIMEOUT=0 * * * *
+         - QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 2. **(Optional) Create a `.env` file** to override variables in your compose file:
    ```env
    PHP_TIMEZONE=Europe/Moscow
    CRON_TIMEOUT=0 * * * *
+   QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 3. **Start the service:**

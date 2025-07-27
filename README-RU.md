@@ -107,7 +107,24 @@
   - `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
   - `PUID=<номер>` — UID пользователя для прав на файлы
   - `PGID=<номер>` — GID группы для прав на файлы
+  - `QBITTORRENT_CATEGORY="<категория>"` — категория qBittorrent для интеграции с Sonarr
 - Для использования часового пояса хоста добавьте монтирование localtime.
+
+#### Интеграция с Sonarr
+
+TorrentMonitor поддерживает интеграцию с [Sonarr](https://sonarr.tv/) через переменную окружения `QBITTORRENT_CATEGORY`. Эта функция позволяет TorrentMonitor бесшовно работать с существующими настройками Sonarr + qBittorrent.
+
+**Как использовать:**
+1. **Предварительные требования:** Убедитесь, что у вас есть рабочая связка Sonarr + qBittorrent с настроенной категорией (например, "tv-sonarr").
+2. **Настройка:** Настройте Sonarr и qBittorrent так, чтобы они НЕ удаляли автоматически завершённые торренты.
+3. **Настройка TorrentMonitor:** Запустите TorrentMonitor с переменной окружения `QBITTORRENT_CATEGORY`, соответствующей вашей категории Sonarr.
+4. **Порядок действий:**
+   - Добавьте сериал в Sonarr
+   - Sonarr автоматически загрузит торрент в qBittorrent
+   - Удалите торрент из qBittorrent
+   - Добавьте ту же страницу трекера (или лучшую альтернативу) в TorrentMonitor для мониторинга
+   - TorrentMonitor будет отслеживать страницу трекера на предмет обновлений и загружать новые эпизоды в ту же категорию
+   - Sonarr автоматически обнаружит новые эпизоды в категории и обработает их (переименует, переместит в библиотеку и т.д.)
 
 **Пример:**
 ```bash
@@ -120,6 +137,7 @@ docker container run -d \
   -v /etc/localtime:/etc/localtime:ro \
   -e PHP_TIMEZONE="Europe/Moscow" \
   -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e QBITTORRENT_CATEGORY="tv-sonarr" \
   -e PUID=1001 \
   -e PGID=1000 \
   alfonder/torrentmonitor
@@ -149,12 +167,14 @@ docker container run -d \
        environment:
          - PHP_TIMEZONE=Europe/Moscow
          - CRON_TIMEOUT=0 * * * *
+         - QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 2. **(Опционально) создайте `.env` для переменных:**
    ```env
    PHP_TIMEZONE=Europe/Moscow
    CRON_TIMEOUT=0 * * * *
+   QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 3. **Запустите сервис:**
