@@ -156,6 +156,8 @@ TorrentMonitor supports integration with [Sonarr](https://sonarr.tv/) through th
    - TorrentMonitor will watch the tracker page for updates and download new episodes to the same category
    - Sonarr will automatically detect new episodes in the category and process them (rename, move to library, etc.)
 
+**Note:** The container automatically monitors for TorrentMonitor updates and reapplies the qBittorrent category configuration if it gets overwritten during automatic updates. This ensures the Sonarr integration continues to work even after TorrentMonitor updates itself.
+
 ---
 
 ### Using Docker Compose

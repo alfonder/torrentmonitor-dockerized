@@ -12,7 +12,11 @@ RUN apk --no-cache add \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
-    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
+    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite && \
+    # Apply patches during build for initial setup
+    chmod +x /rootfs/usr/local/bin/apply-patches.sh && \
+    HTDOCS_DIR="/rootfs/data/htdocs" /rootfs/usr/local/bin/apply-patches.sh && \
+    echo "TorrentMonitor files patched for Docker integration"
 
 # Main image
 FROM alpine:3.15.6

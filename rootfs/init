@@ -1,30 +1,5 @@
 #!/bin/sh
 
-PHP_FILE="/data/htdocs/class/qBittorrent.class.php"
-
-# Handle 'category' entry in PHP file
-if [ -n "$QBITTORRENT_CATEGORY" ]; then
-  INDENT=$(grep -m1 "'root_folder'" "$PHP_FILE" | sed -n 's/^\([[:space:]]*\).*root_folder.*/\1/p')
-  NEW_LINE="${INDENT}'category' => '${QBITTORRENT_CATEGORY}',"
-  if grep -q "'category'" "$PHP_FILE"; then
-    CURRENT_LINE=$(grep "'category'" "$PHP_FILE" | head -n1 | sed 's/^[[:space:]]*//;s/,$//')
-    EXPECTED_LINE="'category' => '${QBITTORRENT_CATEGORY}'"
-    if [ "$CURRENT_LINE" != "$EXPECTED_LINE" ]; then
-      ESCAPED_LINE=$(printf "%s\n" "$NEW_LINE" | sed 's/[\/&]/\\&/g')
-      sed -i "/'category'/s/^[[:space:]]*.*'category' => .*$/$(echo "$ESCAPED_LINE")/" "$PHP_FILE"
-    fi
-  else
-    sed -i "s/\('root_folder' => true\)[[:space:]]*$/\1,/" "$PHP_FILE"
-    ESCAPED_LINE=$(printf "%s\n" "$NEW_LINE" | sed 's/[\/&]/\\&/g')
-    sed -i "/'root_folder' => true,/a\\$ESCAPED_LINE" "$PHP_FILE"
-  fi
-else
-  if grep -q "'category'" "$PHP_FILE"; then
-    sed -i "/'category' => .*,\{0,1\}[[:space:]]*$/d" "$PHP_FILE"
-    sed -i "s/\('root_folder' => true\),[[:space:]]*$/\1/" "$PHP_FILE"
-  fi
-fi
-
 # Populate database if not exists
 test -f /data/htdocs/db/tm.sqlite || cp /data/htdocs/db_schema/tm.sqlite /data/htdocs/db/tm.sqlite
 test -f /data/htdocs/db/config.xml || cp /data/htdocs/config.xml /data/htdocs/db/config.xml
@@ -44,7 +19,7 @@ echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php7/cli/php.ini
 sed -i "/memory_limit/d" /etc/php7/php-fpm.conf
 echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php7/php-fpm.conf
 
-# Set cron timeuot for engine.php
+# Set cron timeout for engine.php
 echo "${CRON_TIMEOUT} ${CRON_COMMAND}" > /etc/crontabs/nginx
 
 # Force user/group ID
