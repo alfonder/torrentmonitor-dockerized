@@ -99,17 +99,31 @@ Special thanks to [nawa](https://github.com/nawa) for starting the original 'tor
 
 ### Advanced Usage
 
-- Change the server port by editing the `-p` option.
-- Set environment variables to customize behavior:
-  - `CRON_TIMEOUT="0 */3 * * *"` — Cron schedule (default: every hour)
-  - `CRON_COMMAND="<...>"` — Custom update command (default: `php -q /data/htdocs/engine.php`)
-  - `PHP_TIMEZONE="Europe/Moscow"` — PHP timezone (default: UTC)
-  - `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
-  - `PUID=<number>` — User ID for file ownership
-  - `PGID=<number>` — Group ID for file ownership
-- To use the host's timezone, add a localtime binding.
+#### Environment Variables
 
-**Example:**
+You can customize TorrentMonitor behavior using these environment variables:
+
+- `CRON_TIMEOUT="0 */3 * * *"` — Cron schedule (default: every hour)
+- `CRON_COMMAND="<...>"` — Custom update command (default: `php -q /data/htdocs/engine.php`)
+- `PHP_TIMEZONE="Europe/Moscow"` — PHP timezone (default: UTC)
+- `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
+- `PUID=<number>` — User ID for file ownership
+- `PGID=<number>` — Group ID for file ownership
+- `QBITTORRENT_CATEGORY="<category>"` — qBittorrent category for Sonarr integration
+
+#### Port Configuration
+
+Change the server port by editing the `-p` option in your Docker command.
+
+#### Timezone Configuration
+
+To use the host's timezone, add a localtime binding:
+```bash
+-v /etc/localtime:/etc/localtime:ro
+```
+
+#### Complete Example
+
 ```bash
 docker container run -d \
   --name torrentmonitor \
@@ -120,10 +134,29 @@ docker container run -d \
   -v /etc/localtime:/etc/localtime:ro \
   -e PHP_TIMEZONE="Europe/Moscow" \
   -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e QBITTORRENT_CATEGORY="tv-sonarr" \
   -e PUID=1001 \
   -e PGID=1000 \
   alfonder/torrentmonitor
 ```
+
+#### Sonarr Integration
+
+TorrentMonitor supports integration with [Sonarr](https://sonarr.tv/) through the `QBITTORRENT_CATEGORY` environment variable. This feature allows TorrentMonitor to work seamlessly with existing Sonarr + qBittorrent setups.
+
+**How to use:**
+1. **Prerequisites:** Ensure you have a working Sonarr + qBittorrent setup with a configured category (e.g., "tv-sonarr").
+2. **Configuration:** Configure both Sonarr and qBittorrent to NOT automatically delete completed torrents.
+3. **Setup TorrentMonitor:** Launch TorrentMonitor with the `QBITTORRENT_CATEGORY` environment variable matching your Sonarr category.
+4. **Workflow:** 
+   - Add a TV series to Sonarr
+   - Sonarr will automatically download a torrent to qBittorrent
+   - Remove the torrent from qBittorrent
+   - Add the same tracker page (or a better alternative) to TorrentMonitor for monitoring
+   - TorrentMonitor will watch the tracker page for updates and download new episodes to the same category
+   - Sonarr will automatically detect new episodes in the category and process them (rename, move to library, etc.)
+
+**Important:** When using the `QBITTORRENT_CATEGORY` feature, you **must disable auto-updating** in TorrentMonitor's web interface. Self-updates will overwrite the category configuration and break the Sonarr integration. To disable auto-updates, go to TorrentMonitor settings and turn off automatic updates.
 
 ---
 
@@ -151,12 +184,14 @@ You can run TorrentMonitor with either classic Docker Compose (`docker-compose`)
        environment:
          - PHP_TIMEZONE=Europe/Moscow
          - CRON_TIMEOUT=0 * * * *
+         - QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 2. **(Optional) Create a `.env` file** to override variables in your compose file:
    ```env
    PHP_TIMEZONE=Europe/Moscow
    CRON_TIMEOUT=0 * * * *
+   QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 3. **Start the service:**
@@ -215,13 +250,14 @@ docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' t
 ## Platform Support
 
 Images are available for:
-- x86-64
-- x86
-- arm64
-- arm32
-- ppc64le
+- **x86-64** - Intel/AMD 64-bit processors, most desktop/server PCs
+- **x86** - Intel/AMD 32-bit processors, older PCs
+- **arm64** - 64-bit ARM processors (Raspberry Pi 4+, Raspberry Pi Compute Module 4, Apple Silicon Macs via Docker Desktop, AWS Graviton instances, NVIDIA Jetson boards, ODROID-N2+, Orange Pi 5, Rock Pi 4, Banana Pi M5)
+- **arm32v7** - 32-bit ARMv7 processors (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
+- **arm32v6** - 32-bit ARMv6 processors (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
+- **ppc64le** - IBM POWER processors (IBM servers, mainframes)
 
-Other platforms (e.g., s390x, mips) can be added on request.
+Other platforms can be added on request.
 
 ---
 

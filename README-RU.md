@@ -99,17 +99,31 @@
 
 ### Расширенное использование
 
-- Измените порт сервера через опцию `-p`.
-- Используйте переменные окружения для настройки:
-  - `CRON_TIMEOUT="0 */3 * * *"` — расписание cron (по умолчанию: каждый час)
-  - `CRON_COMMAND="<...>"` — команда обновления (по умолчанию: `php -q /data/htdocs/engine.php`)
-  - `PHP_TIMEZONE="Europe/Moscow"` — часовой пояс PHP (по умолчанию: UTC)
-  - `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
-  - `PUID=<номер>` — UID пользователя для прав на файлы
-  - `PGID=<номер>` — GID группы для прав на файлы
-- Для использования часового пояса хоста добавьте монтирование localtime.
+#### Переменные окружения
 
-**Пример:**
+Вы можете настроить поведение TorrentMonitor с помощью этих переменных окружения:
+
+- `CRON_TIMEOUT="0 */3 * * *"` — расписание cron (по умолчанию: каждый час)
+- `CRON_COMMAND="<...>"` — команда обновления (по умолчанию: `php -q /data/htdocs/engine.php`)
+- `PHP_TIMEZONE="Europe/Moscow"` — часовой пояс PHP (по умолчанию: UTC)
+- `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
+- `PUID=<номер>` — UID пользователя для прав на файлы
+- `PGID=<номер>` — GID группы для прав на файлы
+- `QBITTORRENT_CATEGORY="<категория>"` — категория qBittorrent для интеграции с Sonarr
+
+#### Настройка порта
+
+Измените порт сервера через опцию `-p` в команде Docker.
+
+#### Настройка часового пояса
+
+Для использования часового пояса хоста добавьте монтирование localtime:
+```bash
+-v /etc/localtime:/etc/localtime:ro
+```
+
+#### Полный пример
+
 ```bash
 docker container run -d \
   --name torrentmonitor \
@@ -120,10 +134,29 @@ docker container run -d \
   -v /etc/localtime:/etc/localtime:ro \
   -e PHP_TIMEZONE="Europe/Moscow" \
   -e CRON_TIMEOUT="15 8-23 * * *" \
+  -e QBITTORRENT_CATEGORY="tv-sonarr" \
   -e PUID=1001 \
   -e PGID=1000 \
   alfonder/torrentmonitor
 ```
+
+#### Интеграция с Sonarr
+
+TorrentMonitor поддерживает интеграцию с [Sonarr](https://sonarr.tv/) через переменную окружения `QBITTORRENT_CATEGORY`. Эта функция позволяет TorrentMonitor бесшовно работать с существующими настройками Sonarr + qBittorrent.
+
+**Как использовать:**
+1. **Предварительные требования:** Убедитесь, что у вас есть рабочая связка Sonarr + qBittorrent с настроенной категорией (например, "tv-sonarr").
+2. **Настройка:** Настройте Sonarr и qBittorrent так, чтобы они НЕ удаляли автоматически завершённые торренты.
+3. **Настройка TorrentMonitor:** Запустите TorrentMonitor с переменной окружения `QBITTORRENT_CATEGORY`, соответствующей вашей категории Sonarr.
+4. **Порядок действий:**
+   - Добавьте сериал в Sonarr
+   - Sonarr автоматически загрузит торрент в qBittorrent
+   - Удалите торрент из qBittorrent
+   - Добавьте ту же страницу трекера (или лучшую альтернативу) в TorrentMonitor для мониторинга
+   - TorrentMonitor будет отслеживать страницу трекера на предмет обновлений и загружать новые эпизоды в ту же категорию
+   - Sonarr автоматически обнаружит новые эпизоды в категории и обработает их (переименует, переместит в библиотеку и т.д.)
+
+**Важно:** При использовании функции `QBITTORRENT_CATEGORY` вы **должны отключить автообновления** в веб-интерфейсе TorrentMonitor. Самообновления перезаписывают конфигурацию категории и нарушают интеграцию с Sonarr. Чтобы отключить автообновления, перейдите в настройки TorrentMonitor и отключите автоматические обновления.
 
 ---
 
@@ -149,12 +182,14 @@ docker container run -d \
        environment:
          - PHP_TIMEZONE=Europe/Moscow
          - CRON_TIMEOUT=0 * * * *
+         - QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 2. **(Опционально) создайте `.env` для переменных:**
    ```env
    PHP_TIMEZONE=Europe/Moscow
    CRON_TIMEOUT=0 * * * *
+   QBITTORRENT_CATEGORY=tv-sonarr
    ```
 
 3. **Запустите сервис:**
@@ -211,13 +246,14 @@ docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' t
 ## Поддерживаемые платформы
 
 Доступны образы для:
-- x86-64
-- x86
-- arm64
-- arm32
-- ppc64le
+- **x86-64** - 64-битные процессоры Intel/AMD, большинство ПК/серверов
+- **x86** - 32-битные процессоры Intel/AMD, старые ПК
+- **arm64** - 64-битные ARM процессоры (Raspberry Pi 4+, Raspberry Pi Compute Module 4, Apple Silicon Mac через Docker Desktop, AWS Graviton инстансы, платы NVIDIA Jetson, ODROID-N2+, Orange Pi 5, Rock Pi 4, Banana Pi M5)
+- **arm32v7** - 32-битные ARMv7 процессоры (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
+- **arm32v6** - 32-битные ARMv6 процессоры (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
+- **ppc64le** - процессоры IBM POWER (серверы IBM, мейнфреймы)
 
-Другие платформы (например, s390x, mips) — по запросу.
+Другие платформы — по запросу.
 
 ---
 
