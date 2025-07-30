@@ -19,8 +19,8 @@ FROM alpine:3.15.6
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 LABEL org.opencontainers.image.source="https://github.com/alfonder/torrentmonitor-dockerized/"
 
-ENV VERSION="2.1.8" \
-    RELEASE_DATE="23.05.2025" \
+ENV VERSION="2.1.9" \
+    RELEASE_DATE="30.08.2025" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
