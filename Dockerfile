@@ -1,5 +1,5 @@
 # rootfs builder
-FROM alpine:3.22.2 as rootfs-builder
+FROM alpine:3.23.0 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -16,7 +16,7 @@ RUN apk --no-cache add \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
-FROM alpine:3.22.2
+FROM alpine:3.23.0
 MAINTAINER Alexander Fomichev <fomichev.ru@gmail.com>
 LABEL org.opencontainers.image.source="https://github.com/alfonder/torrentmonitor-dockerized/"
 
