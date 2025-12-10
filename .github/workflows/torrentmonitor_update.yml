@@ -34,7 +34,7 @@ jobs:
           echo "Base pr_branch=${PR_BRANCH}, date=${TM_DATE}, tm_version=${TM_VERSION}"
 
       - name: Create Pull Request, Bump tm-latest.zip, torrentmonitor version ${{ env.tm_version }}
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           branch: ${{ env.pr_branch }}
           commit-message: TM -> ${{ env.tm_version }}
