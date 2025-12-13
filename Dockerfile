@@ -22,8 +22,7 @@ RUN abuild-keygen -an -i -q && \
     abuild fetch && \
     abuild unpack && \
     cd src/libiconv-1.15 && \
-    sed -i '39i#if !defined(__GLIBC__) && !defined(__linux__)' lib/loop_wchar.h && \
-    sed -i '41i#endif' lib/loop_wchar.h && \
+    sed -i '40d' lib/loop_wchar.h && \
     cd ../.. && \
     abuild build && \
     abuild rootpkg
