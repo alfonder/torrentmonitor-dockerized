@@ -31,21 +31,24 @@ test -f /data/htdocs/db/config.xml || cp /data/htdocs/config.xml /data/htdocs/db
 
 # Configure system
 # Set PHP timezone
-sed -i "/date\.timezone/d" /etc/php7/php.ini
-echo "date.timezone = ${PHP_TIMEZONE}" >> /etc/php7/php.ini
-sed -i "/date\.timezone/d" /etc/php7/cli/php.ini
-echo "date.timezone = ${PHP_TIMEZONE}" >> /etc/php7/cli/php.ini
+sed -i "/date\\.timezone/d" /etc/php85/php.ini
+echo "date.timezone = ${PHP_TIMEZONE}" >> /etc/php85/php.ini
+sed -i "/date\\.timezone/d" /etc/php85/cli/php.ini
+echo "date.timezone = ${PHP_TIMEZONE}" >> /etc/php85/cli/php.ini
 
 # Set PHP memory limit
-sed -i "/memory_limit/d" /etc/php7/php.ini
-echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php7/php.ini
-sed -i "/memory_limit/d" /etc/php7/cli/php.ini
-echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php7/cli/php.ini
-sed -i "/memory_limit/d" /etc/php7/php-fpm.conf
-echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php7/php-fpm.conf
+sed -i "/memory_limit/d" /etc/php85/php.ini
+echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php85/php.ini
+sed -i "/memory_limit/d" /etc/php85/cli/php.ini
+echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php85/cli/php.ini
+sed -i "/memory_limit/d" /etc/php85/php-fpm.conf
+echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php85/php-fpm.conf
 
 # Set cron timeout for engine.php
 echo "${CRON_TIMEOUT} ${CRON_COMMAND}" > /etc/crontabs/nginx
+
+# Configure nginx port
+sed -i "s/listen[[:space:]]*[0-9]*;/listen ${NGINX_PORT};/" /etc/nginx/conf.d/default.conf
 
 # Force user/group ID
 [ "q${PUID}" == "q" ] || usermod -o -u "$PUID" nginx
@@ -59,8 +62,8 @@ chown -R nginx:nginx /var/log/nginx
 chmod 777 /tmp
 
 # Compatibility links
-test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm7 /usr/bin/php-fpm
-test -f /usr/bin/php || ln -s /usr/bin/php7 /usr/bin/php
+test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm85 /usr/bin/php-fpm
+test -f /usr/bin/php || ln -s /usr/bin/php85 /usr/bin/php
 
 # Start apps
 php-fpm

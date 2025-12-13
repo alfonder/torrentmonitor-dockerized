@@ -107,13 +107,22 @@ You can customize TorrentMonitor behavior using these environment variables:
 - `CRON_COMMAND="<...>"` — Custom update command (default: `php -q /data/htdocs/engine.php`)
 - `PHP_TIMEZONE="Europe/Moscow"` — PHP timezone (default: UTC)
 - `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
+- `NGINX_PORT="80"` — Nginx listen port inside container (default: 80)
 - `PUID=<number>` — User ID for file ownership
 - `PGID=<number>` — Group ID for file ownership
 - `QBITTORRENT_CATEGORY="<category>"` — qBittorrent category for Sonarr integration
 
 #### Port Configuration
 
-Change the server port by editing the `-p` option in your Docker command.
+To expose the service on a different port, change the `-p` option in your Docker command:
+```bash
+-p 3000:80  # Access via http://localhost:3000
+```
+
+To change the internal nginx port, use the `NGINX_PORT` environment variable and match it in the port mapping:
+```bash
+-p 8081:8081 -e NGINX_PORT=8081
+```
 
 #### Timezone Configuration
 
@@ -256,6 +265,8 @@ Images are available for:
 - **arm32v7** - 32-bit ARMv7 processors (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
 - **arm32v6** - 32-bit ARMv6 processors (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
 - **ppc64le** - IBM POWER processors (IBM servers, mainframes)
+- **s390x** - IBM Z mainframe processors (IBM LinuxONE, IBM Z systems)
+- **riscv64** - 64-bit RISC-V processors (SiFive boards, StarFive VisionFive, Allwinner D1 boards)
 
 Other platforms can be added on request.
 

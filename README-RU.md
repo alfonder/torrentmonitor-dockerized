@@ -107,13 +107,22 @@
 - `CRON_COMMAND="<...>"` — команда обновления (по умолчанию: `php -q /data/htdocs/engine.php`)
 - `PHP_TIMEZONE="Europe/Moscow"` — часовой пояс PHP (по умолчанию: UTC)
 - `PHP_MEMORY_LIMIT="512M"` — лимит памяти PHP (по умолчанию: 512M)
+- `NGINX_PORT="80"` — порт nginx внутри контейнера (по умолчанию: 80)
 - `PUID=<номер>` — UID пользователя для прав на файлы
 - `PGID=<номер>` — GID группы для прав на файлы
 - `QBITTORRENT_CATEGORY="<категория>"` — категория qBittorrent для интеграции с Sonarr
 
 #### Настройка порта
 
-Измените порт сервера через опцию `-p` в команде Docker.
+Чтобы открыть сервис на другом порту, измените опцию `-p` в команде Docker:
+```bash
+-p 3000:80  # Доступ через http://localhost:3000
+```
+
+Чтобы изменить внутренний порт nginx, используйте переменную окружения `NGINX_PORT` и укажите соответствующий порт в маппинге:
+```bash
+-p 8081:8081 -e NGINX_PORT=8081
+```
 
 #### Настройка часового пояса
 
@@ -252,6 +261,8 @@ docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' t
 - **arm32v7** - 32-битные ARMv7 процессоры (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
 - **arm32v6** - 32-битные ARMv6 процессоры (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
 - **ppc64le** - процессоры IBM POWER (серверы IBM, мейнфреймы)
+- **s390x** - процессоры IBM Z мейнфреймов (IBM LinuxONE, системы IBM Z)
+- **riscv64** - 64-битные процессоры RISC-V (платы SiFive, StarFive VisionFive, платы Allwinner D1)
 
 Другие платформы — по запросу.
 
