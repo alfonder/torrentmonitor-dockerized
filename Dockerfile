@@ -44,8 +44,13 @@ RUN apk --no-cache add \
 # Main image
 FROM alpine:3.23.0
 
-ENV VERSION="2.2.1" \
-    RELEASE_DATE="8.11.2025" \
+# Build arguments for TorrentMonitor Dockerized version tracking
+ARG DOCKERIZED_VERSION="dev"
+ARG BUILD_DATE="unknown"
+
+# Upstream TorrentMonitor application version (PHP application from ElizarovEugene repo)
+ENV TM_VERSION="2.2.1" \
+    TM_RELEASE_DATE="8.11.2025" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
@@ -55,11 +60,13 @@ ENV VERSION="2.2.1" \
 
 LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.com>" \
     org.opencontainers.image.title="TorrentMonitor Dockerized" \
-    org.opencontainers.image.description="Dockerized TorrentMonitor with Alpine Linux, Nginx and PHP 8.5" \
+    org.opencontainers.image.description="Dockerized TorrentMonitor v${TM_VERSION} with Alpine Linux, Nginx and PHP 8.5" \
     org.opencontainers.image.source="https://github.com/alfonder/torrentmonitor-dockerized" \
     org.opencontainers.image.url="https://github.com/alfonder/torrentmonitor-dockerized" \
-    org.opencontainers.image.version="${VERSION}" \
-    org.opencontainers.image.created="${RELEASE_DATE}"
+    org.opencontainers.image.version="${DOCKERIZED_VERSION}" \
+    org.opencontainers.image.created="${BUILD_DATE}" \
+    torrentmonitor.app.version="${TM_VERSION}" \
+    torrentmonitor.app.release-date="${TM_RELEASE_DATE}"
 
 COPY --from=rootfs-builder /rootfs/ /
 COPY --from=apk-builder /home/builduser/packages /tmp/packages

@@ -71,6 +71,9 @@ jobs:
         with:
           platforms: ${{ env.build_platforms }}
           push: true
+          build-args: |
+            DOCKERIZED_VERSION=${{ env.image_tag }}
+            BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           tags: |
             ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.image_tag }}
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.image_tag }}
@@ -81,6 +84,9 @@ jobs:
         with:
           platforms: ${{ env.build_platforms }}
           push: true
+          build-args: |
+            DOCKERIZED_VERSION=${{ env.image_tag }}
+            BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           tags: |
             ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
