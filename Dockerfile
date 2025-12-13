@@ -66,7 +66,9 @@ LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.co
     org.opencontainers.image.version="${DOCKERIZED_VERSION}" \
     org.opencontainers.image.created="${BUILD_DATE}" \
     torrentmonitor.app.version="${TM_VERSION}" \
-    torrentmonitor.app.release-date="${TM_RELEASE_DATE}"
+    torrentmonitor.app.release-date="${TM_RELEASE_DATE}" \
+    torrentmonitor.app.url="https://tormon.ru/" \
+    torrentmonitor.app.source="https://github.com/ElizarovEugene/TorrentMonitor"
 
 COPY --from=rootfs-builder /rootfs/ /
 COPY --from=apk-builder /home/builduser/packages /tmp/packages
