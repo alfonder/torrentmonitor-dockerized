@@ -22,8 +22,8 @@ jobs:
           TM_VERSION=$(jq -r '.system' /tmp/version.txt)
           TM_DATE=$(head -n 1 /tmp/changelog.txt | awk '{print $1;}')
 
-          sed -i "s/\(ENV VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" Dockerfile
-          sed -i "s/\(    RELEASE_DATE=*\)[^ ]*/\1\"${TM_DATE}\"/" Dockerfile
+          sed -i "s/\(ENV TM_VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" Dockerfile
+          sed -i "s/\(    TM_RELEASE_DATE=*\)[^ ]*/\1\"${TM_DATE}\"/" Dockerfile
 
           PR_BRANCH="tmupdatebot/torrentmonitorupdate-${TM_VERSION}"
 
