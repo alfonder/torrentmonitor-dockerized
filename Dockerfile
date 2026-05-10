@@ -17,11 +17,11 @@ COPY patches/libiconv-1.15-loop_wchar.patch /tmp/
 USER builduser
 WORKDIR /home/builduser
 
-RUN abuild-keygen -an -i -q && \
+RUN abuild-keygen -an -q && \
     mv /home/builduser/.abuild/*.rsa     /home/builduser/.abuild/builder.rsa && \
     mv /home/builduser/.abuild/*.rsa.pub /home/builduser/.abuild/builder.rsa.pub && \
-    sudo sh -c 'rm -f /etc/apk/keys/*.rsa.pub; cp /home/builduser/.abuild/builder.rsa.pub /etc/apk/keys/builder.rsa.pub' && \
-    sed -i 's|^PACKAGER_PRIVKEY=.*|PACKAGER_PRIVKEY="/home/builduser/.abuild/builder.rsa"|' /home/builduser/.abuild/abuild.conf && \
+    sudo cp /home/builduser/.abuild/builder.rsa.pub /etc/apk/keys/builder.rsa.pub && \
+    echo 'PACKAGER_PRIVKEY="/home/builduser/.abuild/builder.rsa"' > /home/builduser/.abuild/abuild.conf && \
     cp /home/builduser/.abuild/builder.rsa.pub /tmp/builder.rsa.pub && \
     wget -O APKBUILD "https://gitlab.alpinelinux.org/alpine/aports/-/raw/3.13-stable/community/gnu-libiconv/APKBUILD" && \
     abuild checksum && \
