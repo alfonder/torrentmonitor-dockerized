@@ -39,10 +39,12 @@ jobs:
             BUILD_PLATFORMS="${{ env.PLATFORMS }}"
           fi
 
+          BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+
           echo "image_tag=${IMAGE_TAG}" >> $GITHUB_ENV
           echo "is_tag=${IS_TAG}" >> $GITHUB_ENV
           echo "build_platforms=${BUILD_PLATFORMS}" >> $GITHUB_ENV
-          echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
+          echo "build_date=${BUILD_DATE}" >> $GITHUB_ENV
 
           echo "Action branch=${BRANCH_NAME} tag=${IS_TAG} ref=${GITHUB_REF} image_tag=${IMAGE_TAG} build_date=${BUILD_DATE} platforms=${BUILD_PLATFORMS}"
 
