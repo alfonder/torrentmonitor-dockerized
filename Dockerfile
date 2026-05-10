@@ -12,16 +12,23 @@ RUN apk --no-cache add \
     echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel && \
     chmod 0400 /etc/sudoers.d/wheel
 
+COPY patches/libiconv-1.15-loop_wchar.patch /tmp/
+
 USER builduser
 WORKDIR /home/builduser
 
 RUN abuild-keygen -an -i -q && \
+    mv /home/builduser/.abuild/*.rsa     /home/builduser/.abuild/builder.rsa && \
+    mv /home/builduser/.abuild/*.rsa.pub /home/builduser/.abuild/builder.rsa.pub && \
+    sudo sh -c 'rm -f /etc/apk/keys/*.rsa.pub; cp /home/builduser/.abuild/builder.rsa.pub /etc/apk/keys/builder.rsa.pub' && \
+    sed -i 's|^PACKAGER_PRIVKEY=.*|PACKAGER_PRIVKEY="/home/builduser/.abuild/builder.rsa"|' /home/builduser/.abuild/abuild.conf && \
+    cp /home/builduser/.abuild/builder.rsa.pub /tmp/builder.rsa.pub && \
     wget -O APKBUILD "https://gitlab.alpinelinux.org/alpine/aports/-/raw/3.13-stable/community/gnu-libiconv/APKBUILD" && \
     abuild checksum && \
     abuild deps && \
     abuild fetch && \
     abuild unpack && \
-    sed -i '39,48d' src/libiconv-1.15/lib/loop_wchar.h && \
+    patch -p1 -d src/libiconv-1.15 < /tmp/libiconv-1.15-loop_wchar.patch && \
     abuild build && \
     abuild rootpkg
 
@@ -71,6 +78,7 @@ LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.co
 
 COPY --from=rootfs-builder /rootfs/ /
 COPY --from=apk-builder /home/builduser/packages /tmp/packages
+COPY --from=apk-builder /tmp/builder.rsa.pub /etc/apk/keys/
 
 RUN apk --no-cache add \
         nginx \
@@ -90,7 +98,7 @@ RUN apk --no-cache add \
         php85-zip \
         php85-dom \
         && \
-    apk --allow-untrusted add /tmp/packages/home/*/gnu-libiconv-1.15-r3.apk && \
+    apk --no-cache add /tmp/packages/home/*/gnu-libiconv-1.15-r*.apk && \
     rm -rf /tmp/* && \
     rm -rf /var/cache/apk/*
 
