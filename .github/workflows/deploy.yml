@@ -101,7 +101,7 @@ jobs:
 
       - name: Set up QEMU
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/setup-qemu-action@v4.0.0
+        uses: docker/setup-qemu-action@v4.1.0
         with:
           platforms: ${{ env.build_platforms }}
 
