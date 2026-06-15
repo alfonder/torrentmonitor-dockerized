@@ -37,7 +37,7 @@ FROM alpine:3.24.0 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
-ADD https://github.com/ElizarovEugene/TorrentMonitor/archive/refs/heads/master.zip /tmp/tm-latest.zip
+COPY tm-refactor.zip /tmp/tm-latest.zip
 
 RUN apk --no-cache add \
         unzip \
@@ -45,7 +45,7 @@ RUN apk --no-cache add \
         patch \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
-    mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
+    mv /tmp/torrentmonitor/* /rootfs/data/htdocs && \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
@@ -55,8 +55,8 @@ FROM alpine:3.24.0
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="2.2.6" \
-    TM_RELEASE_DATE="31.05.2026" \
+ENV TM_VERSION="3.0.b" \
+    TM_RELEASE_DATE="15.06.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
