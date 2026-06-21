@@ -44,6 +44,19 @@ echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php85/cli/php.ini
 sed -i "/memory_limit/d" /etc/php85/php-fpm.conf
 echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php85/php-fpm.conf
 
+# Handle encryption key
+if [ -z "$ENCRYPTION_KEY" ]; then
+  if [ -f "/data/htdocs/db/db_crypt.key" ]; then
+    ENCRYPTION_KEY=$(cat /data/htdocs/db/db_crypt.key)
+  else
+    ENCRYPTION_KEY=$(php -r "echo bin2hex(random_bytes(32));")
+    echo "$ENCRYPTION_KEY" > /data/htdocs/db/db_crypt.key
+  fi
+fi
+# Replace encryption key placeholder in config.php
+ESCAPED_KEY=$(printf "%s" "$ENCRYPTION_KEY" | sed 's/[\/&]/\\&/g')
+sed -i "s/{ENCRYPTION_KEY}/${ESCAPED_KEY}/g" /data/htdocs/config.php
+
 # Set cron timeout for engine.php
 echo "${CRON_TIMEOUT} ${CRON_COMMAND}" > /etc/crontabs/nginx
 
