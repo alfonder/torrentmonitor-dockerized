@@ -9,6 +9,10 @@ updates:
   # Configuration for Dockerfile
   - package-ecosystem: "docker"
     directory: "/"
+    allow-branches:
+      - "master"
+      - "alpine-3.2x"
+      - "beta"
     ignore-branches:
       - "legacy"
     schedule:
