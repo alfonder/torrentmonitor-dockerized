@@ -97,6 +97,7 @@ RUN apk --no-cache add \
         php85-ctype \
         php85-zip \
         php85-dom \
+        php85-openssl \
         && \
     apk --no-cache add /tmp/packages/home/*/gnu-libiconv-1.15-r*.apk && \
     rm -rf /tmp/* && \
