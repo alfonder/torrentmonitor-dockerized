@@ -55,7 +55,7 @@ FROM alpine:3.24.1
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="3.0.b15" \
+ENV TM_VERSION="3.0.b16" \
     TM_RELEASE_DATE="05.07.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
@@ -82,6 +82,7 @@ COPY --from=apk-builder /tmp/builder.rsa.pub /etc/apk/keys/
 
 RUN apk --no-cache add \
         nginx \
+        wget \
         shadow \
         php85 \
         php85-common \
@@ -106,5 +107,8 @@ RUN apk --no-cache add \
 VOLUME ["/data/htdocs/db", "/data/htdocs/torrents"]
 WORKDIR /
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -T 5 -O /dev/null http://127.0.0.1/healthz || exit 1
 
 ENTRYPOINT ["/init"]
