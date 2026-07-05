@@ -111,7 +111,7 @@ jobs:
 
       - name: Build and push ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.image_version }}
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/build-push-action@v7.2.0
+        uses: docker/build-push-action@v7.3.0
         with:
           platforms: ${{ env.build_platforms }}
           push: true
