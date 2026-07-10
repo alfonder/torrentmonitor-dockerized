@@ -1,6 +1,13 @@
 #!/bin/sh
 
 PHP_FILE="/data/htdocs/class/qBittorrent.class.php"
+DATE=$(date +%Y.%m.%d\ %H:%M:%S)
+
+crlog () {
+  echo $1 >> /proc/1/fd/1
+}
+
+crlog "[${DATE}] Starting container: TorrentMonitor ${TM_VERSION}"
 
 # Handle 'category' entry in PHP file
 if [ -n "$QBITTORRENT_CATEGORY" ]; then
@@ -44,18 +51,31 @@ echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php85/cli/php.ini
 sed -i "/memory_limit/d" /etc/php85/php-fpm.conf
 echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php85/php-fpm.conf
 
+# Handle encryption key
+if [ -z "$ENCRYPTION_KEY" ]; then
+  if [ -f "/data/htdocs/db/db_crypt.key" ]; then
+    ENCRYPTION_KEY=$(cat /data/htdocs/db/db_crypt.key)
+  else
+    ENCRYPTION_KEY=$(php -r "echo bin2hex(random_bytes(32));")
+    echo "$ENCRYPTION_KEY" > /data/htdocs/db/db_crypt.key
+  fi
+fi
+# Replace encryption key placeholder in config.php
+ESCAPED_KEY=$(printf "%s" "$ENCRYPTION_KEY" | sed 's/[\/&]/\\&/g')
+sed -i "s/{ENCRYPTION_KEY}/${ESCAPED_KEY}/g" /data/htdocs/config.php
+
 # Set cron timeout for engine.php
 echo "${CRON_TIMEOUT} ${CRON_COMMAND}" > /etc/crontabs/nginx
 
 # Configure nginx port (validate to avoid corrupting nginx config)
 case "$NGINX_PORT" in
   ''|*[!0-9]*)
-    echo "Invalid NGINX_PORT '${NGINX_PORT}': must be a numeric TCP port between 1 and 65535" >&2
+    crlog "Invalid NGINX_PORT '${NGINX_PORT}': must be a numeric TCP port between 1 and 65535"
     exit 1
     ;;
 esac
 if [ "$NGINX_PORT" -lt 1 ] || [ "$NGINX_PORT" -gt 65535 ]; then
-  echo "Invalid NGINX_PORT '${NGINX_PORT}': must be a numeric TCP port between 1 and 65535" >&2
+  crlog "Invalid NGINX_PORT '${NGINX_PORT}': must be a numeric TCP port between 1 and 65535"
   exit 1
 fi
 sed -i "s/listen[[:space:]]*[0-9][0-9]*;/listen ${NGINX_PORT};/" /etc/nginx/conf.d/default.conf
@@ -78,4 +98,5 @@ test -f /usr/bin/php || ln -s /usr/bin/php85 /usr/bin/php
 # Start apps
 php-fpm
 nginx -g 'daemon off;' &
+crlog "Starting cron task..."
 crond -f >> /proc/1/fd/1

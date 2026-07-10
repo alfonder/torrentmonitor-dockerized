@@ -1,5 +1,5 @@
 # apk builder (build gnu-libiconv 1.15 from source)
-FROM alpine:3.24.0 AS apk-builder
+FROM alpine:3.24.1 AS apk-builder
 
 RUN apk --no-cache add \
         alpine-sdk \
@@ -33,7 +33,7 @@ RUN abuild-keygen -an -q && \
     abuild rootpkg
 
 # rootfs builder
-FROM alpine:3.24.0 as rootfs-builder
+FROM alpine:3.24.1 as rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -49,7 +49,7 @@ RUN apk --no-cache add \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
-FROM alpine:3.24.0
+FROM alpine:3.24.1
 
 # Build arguments for TorrentMonitor Dockerized version tracking
 ARG DOCKERIZED_VERSION="dev"
@@ -82,6 +82,8 @@ COPY --from=apk-builder /tmp/builder.rsa.pub /etc/apk/keys/
 
 RUN apk --no-cache add \
         nginx \
+        wget \
+        sqlite \
         shadow \
         php85 \
         php85-common \
@@ -97,6 +99,7 @@ RUN apk --no-cache add \
         php85-ctype \
         php85-zip \
         php85-dom \
+        php85-openssl \
         && \
     apk --no-cache add /tmp/packages/home/*/gnu-libiconv-1.15-r*.apk && \
     rm -rf /tmp/* && \
@@ -105,5 +108,8 @@ RUN apk --no-cache add \
 VOLUME ["/data/htdocs/db", "/data/htdocs/torrents"]
 WORKDIR /
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -T 5 -O /dev/null http://127.0.0.1/healthz || exit 1
 
 ENTRYPOINT ["/init"]
