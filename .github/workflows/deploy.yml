@@ -125,7 +125,7 @@ jobs:
         id: readme_changed
         shell: bash
         run: |
-          if git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -q '^README\.md$'; then
+          if git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -q '^README.*\.md$'; then
             echo "changed=true" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT

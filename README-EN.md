@@ -5,80 +5,27 @@
 
 # TorrentMonitor Dockerized
 
-[[Русская версия]](./README-RU.md)
+[[Русская версия]](./README.md)
 
-A Docker container for [TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor), a web app for tracking and downloading torrents from multiple trackers.
+A Docker container for [TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor), a web app
+for tracking and automatically downloading torrents from multiple trackers. Built on Alpine Linux
+with Nginx and PHP 8.5.
 
----
-
-## Supported Trackers
-
-**Theme update tracking:**
-- anidub.com
-- animelayer.ru
-- baibako.tv
-- booktracker.org
-- casstudio.tv
-- hamsterstudio.org
-- kinozal.me
-- lostfilm.tv
-- newstudio.tv
-- nnmclub.to
-- pornolab.net
-- riperam.org
-- rustorka.com
-- rutor.info
-- **rutracker.org**
-- tfile.cc
-
-**Release group update tracking:**
-- booktracker.org
-- nnm-club.ru
-- pornolab.net
-- rutracker.org
-- tfile.me
-
-**Feed scraping:**
-- baibako.tv
-- hamsterstudio.org
-- lostfilm.tv (+ own mirror)
-- newstudio.tv
+> 📖 **Full container documentation is in the [project Wiki](https://github.com/alfonder/torrentmonitor-dockerized/wiki)**
+> (currently in Russian): installing Docker, running via `docker run` and Docker Compose, environment
+> variables, the TOR + Transmission setup, troubleshooting and more.
+>
+> 📚 Documentation for the application itself (web interface, settings, supported trackers,
+> torrent clients) is in the **[TorrentMonitor Wiki](https://github.com/ElizarovEugene/TorrentMonitor/wiki)**.
 
 ---
 
-## Credits
+## Quick Start
 
-Special thanks to [nawa](https://github.com/nawa) for starting the original 'torrentmonitor-dockerized' project, which inspired this fork.
+1. **Install Docker:** [installation guide](https://docs.docker.com/engine/install/).
 
----
+2. **Run the container:**
 
-## Getting Started
-
-### Basic Usage
-
-1. **Install Docker:**  
-   [Docker installation guide](https://docs.docker.com/engine/install/)
-
-2. **Permissions:**  
-   Use `sudo` with Docker commands or add your user to the `docker` group.
-
-3. **Pull the image:**  
-   From DockerHub:
-   ```bash
-   docker pull alfonder/torrentmonitor:latest
-   ```
-   Or from GitHub Registry:
-   ```bash
-   docker pull ghcr.io/alfonder/torrentmonitor:latest
-   ```
-
-4. **Create persistent volumes:**
-   ```bash
-   docker volume create torrentfiles
-   docker volume create db
-   ```
-
-5. **Run the container:**
    ```bash
    docker container run -d \
      --name torrentmonitor \
@@ -88,182 +35,68 @@ Special thanks to [nawa](https://github.com/nawa) for starting the original 'tor
      -v db:/data/htdocs/db \
      alfonder/torrentmonitor
    ```
-   Your data will persist even if you delete or recreate the container.
 
-6. **Access the web interface:**  
-   Open [http://localhost:8080](http://localhost:8080) in your browser.
+3. **Open the web interface:** [http://localhost:8080](http://localhost:8080)
 
-7. **Configure and use the application.**
+Data is stored in volumes and persists across container recreation.
 
----
+### Docker Compose
 
-### Advanced Usage
-
-#### Environment Variables
-
-You can customize TorrentMonitor behavior using these environment variables:
-
-- `CRON_TIMEOUT="0 */3 * * *"` — Cron schedule (default: every hour)
-- `CRON_COMMAND="<...>"` — Custom update command (default: `php -q /data/htdocs/engine.php`)
-- `PHP_TIMEZONE="Europe/Moscow"` — PHP timezone (default: UTC)
-- `PHP_MEMORY_LIMIT="512M"` — PHP memory limit (default: 512M)
-- `NGINX_PORT="80"` — Nginx listen port inside container (default: 80)
-- `PUID=<number>` — User ID for file ownership
-- `PGID=<number>` — Group ID for file ownership
-
-#### Port Configuration
-
-To expose the service on a different port, change the `-p` option in your Docker command:
-```bash
--p 3000:80  # Access via http://localhost:3000
+```yaml
+services:
+  torrentmonitor:
+    container_name: torrentmonitor
+    image: alfonder/torrentmonitor:latest
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./torrents:/data/htdocs/torrents
+      - ./db:/data/htdocs/db
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PHP_TIMEZONE=Europe/Moscow
+      - CRON_TIMEOUT=0 * * * *
 ```
 
-To change the internal nginx port, use the `NGINX_PORT` environment variable and match it in the port mapping:
 ```bash
--p 8081:8081 -e NGINX_PORT=8081
-```
-
-#### Timezone Configuration
-
-To use the host's timezone, add a localtime binding:
-```bash
--v /etc/localtime:/etc/localtime:ro
-```
-
-#### Complete Example
-
-```bash
-docker container run -d \
-  --name torrentmonitor \
-  --restart unless-stopped \
-  -p 8080:80 \
-  -v <path_to_torrents_folder>:/data/htdocs/torrents \
-  -v <path_to_db_folder>:/data/htdocs/db \
-  -v /etc/localtime:/etc/localtime:ro \
-  -e PHP_TIMEZONE="Europe/Moscow" \
-  -e CRON_TIMEOUT="15 8-23 * * *" \
-  -e PUID=1001 \
-  -e PGID=1000 \
-  alfonder/torrentmonitor
+docker compose up -d
 ```
 
 ---
 
-### Using Docker Compose
+## Main Environment Variables
 
-You can run TorrentMonitor with either classic Docker Compose (`docker-compose`) or Docker Compose v2 (`docker compose`). Both methods are supported.
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `CRON_TIMEOUT` | `0 * * * *` | Update check schedule (cron format) |
+| `PHP_TIMEZONE` | `UTC` | Timezone |
+| `PHP_MEMORY_LIMIT` | `512M` | PHP memory limit |
+| `NGINX_PORT` | `80` | Internal Nginx port |
+| `PUID` / `PGID` | — | UID/GID for file ownership |
 
-#### Docker Compose v2 (recommended)
-
-1. **Create a `docker-compose.yml` file:**
-   ```yaml
-   version: '3'
-
-   services:
-     torrentmonitor:
-       container_name: torrentmonitor
-       image: alfonder/torrentmonitor:latest
-       restart: unless-stopped
-       ports:
-         - "8080:80"
-       volumes:
-         - ./torrents:/data/htdocs/torrents
-         - ./db:/data/htdocs/db
-         - /etc/localtime:/etc/localtime:ro
-       environment:
-         - PHP_TIMEZONE=Europe/Moscow
-         - CRON_TIMEOUT=0 * * * *
-   ```
-
-2. **(Optional) Create a `.env` file** to override variables in your compose file:
-   ```env
-   PHP_TIMEZONE=Europe/Moscow
-   CRON_TIMEOUT=0 * * * *
-   ```
-
-3. **Start the service:**
-   ```bash
-   docker compose up -d
-   ```
-
-4. **Stop the service:**
-   ```bash
-   docker compose down
-   ```
-
-#### Classic Docker Compose
-
-You can use the same `docker-compose.yml` file as above.
-
-1. **Start the service:**
-   ```bash
-   docker-compose up -d
-   ```
-
-2. **Stop the service:**
-   ```bash
-   docker-compose down
-   ```
-
-Both `docker compose` (v2) and `docker-compose` (classic) commands are supported. Use whichever matches your Docker installation.
+Full reference: [Wiki: Environment Variables](https://github.com/alfonder/torrentmonitor-dockerized/wiki/Environment-Variables).
 
 ---
 
-### TorrentMonitor + TOR + Transmission
-
-You can run TorrentMonitor together with Transmission and TOR using `docker-compose`. See the [example script](examples/docker-compose.yml).
-
----
-
-### Useful Commands
+## Image
 
 ```bash
-docker container stop torrentmonitor
-docker container start torrentmonitor
-docker container restart torrentmonitor
+docker pull alfonder/torrentmonitor:latest          # Docker Hub
+docker pull ghcr.io/alfonder/torrentmonitor:latest  # GitHub Container Registry
 ```
 
----
+Platforms: `amd64`, `arm64`, `arm/v7`, `arm/v6`, `riscv64`.
 
-### Version Info
+Tags: `latest`, `vX.X.X-X`, `legacy`, `devel`, `beta`.
 
-To check the running container version:
-```bash
-docker container inspect -f '{{ index .Config.Labels "ru.korphome.version" }}' torrentmonitor
-```
+See [Wiki: Platforms, Tags and Versions](https://github.com/alfonder/torrentmonitor-dockerized/wiki/Platforms-Tags-and-Versions).
 
 ---
 
-## Platform Support
+## Credits
 
-Images are available for:
-- **x86-64** - Intel/AMD 64-bit processors, most desktop/server PCs
-- ~~x86~~ *(deprecated)* - Intel/AMD 32-bit processors, older PCs
-- **arm64** - 64-bit ARM processors (Raspberry Pi 4+, Raspberry Pi Compute Module 4, Apple Silicon Macs via Docker Desktop, AWS Graviton instances, NVIDIA Jetson boards, ODROID-N2+, Orange Pi 5, Rock Pi 4, Banana Pi M5)
-- **arm32v7** - 32-bit ARMv7 processors (Raspberry Pi 2/3, Raspberry Pi Zero 2 W, Raspberry Pi Compute Module 3, BeagleBone Black, ODROID-XU4, ASUS Tinker Board, Orange Pi PC, Banana Pi M2+, NanoPi NEO)
-- **arm32v6** - 32-bit ARMv6 processors (Raspberry Pi 1 Model A/B, Raspberry Pi Zero/Zero W, Raspberry Pi Compute Module 1)
-- ~~ppc64le~~ *(deprecated)* - IBM POWER processors (IBM servers, mainframes)
-- ~~s390x~~ *(deprecated)* - IBM Z mainframe processors (IBM LinuxONE, IBM Z systems)
-- **riscv64** - 64-bit RISC-V processors (SiFive boards, StarFive VisionFive, Allwinner D1 boards)
-
-Other platforms can be added on request.
-
----
-
-## Docker Image Labels
-
-- **latest** - the most recent version, based on the current Alpine Linux image *(recommended)*
-- **vXXXX-X** - the exact TM version and build
-- **legacy** - the old stable version, based on Alpine Linux 3.15 and PHP 7
-- **devel** - developer version for debugging *(not recommended)*
-
----
-
-## OS Support
-
-**Linux:**  
-Use Docker directly. The correct image will be pulled automatically.
-
-**Windows & macOS:**  
-Use Docker Desktop (Windows 10 Pro/Enterprise 64-bit with Hyper-V, or macOS Yosemite 10.10.3+).  
-[Download Docker Desktop](https://www.docker.com/products/docker-desktop)
+Special thanks to [Eugene Elizarov](https://github.com/ElizarovEugene) for the
+[TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor) app. Thanks to
+[nawa](https://github.com/nawa) for the original
+[`torrentmonitor-dockerized`](https://github.com/nawa/torrentmonitor-dockerized) project.
