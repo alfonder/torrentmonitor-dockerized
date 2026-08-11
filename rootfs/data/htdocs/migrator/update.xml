@@ -3,6 +3,18 @@
     <title>TorrentMonitor Update Schema</title>
 
     <update>
+      <version>3.2</version>
+      <description>- rutracker.org: обход Cloudflare через Byparr не работает, вариантов обхода капчи не нашлось. Добавлена ручная вставка куки на странице учётных данных</description>
+      <files>
+        <file>class/System.class.php</file>
+        <file>trackers/rutracker.org.engine.php</file>
+        <file>include/credentials.php</file>
+        <file>action.php</file>
+        <file>changelog.txt</file>
+      </files>
+    </update>
+
+    <update>
       <version>3.1</version>
       <description>- Исправлена кодировка заголовков при работе через FlareSolverr/Byparr
         - rutracker.org: обход Cloudflare через Byparr
