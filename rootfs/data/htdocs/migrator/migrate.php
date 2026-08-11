@@ -9,11 +9,13 @@ if (php_sapi_name() !== 'cli') {
     die("This script must be run from the command line.\n");
 }
 
-$dir = dirname(__FILE__).'/../';
-require_once $dir . 'config.php';
+$dir = dirname(__FILE__).'/';
+$rootdir = dirname(__FILE__).'/../';
+
+require_once $rootdir . 'config.php';
 
 // Read system version from version.txt
-$versionData = json_decode(file_get_contents($dir . 'version.txt'));
+$versionData = json_decode(file_get_contents($rootdir . 'version.txt'));
 $systemVersion = $versionData->system;
 
 // Step 1: Check db.type
@@ -40,7 +42,7 @@ if ($stmt->fetchColumn() > 0) {
 }
 
 // Step 2: Backup the sqlite file
-$backupFile = $dbFile . $systemVersion;
+$backupFile = $dbFile . '.' . $systemVersion;
 if (!copy($dbFile, $backupFile)) {
     echo "Failed to create backup: $backupFile\n";
     exit(1);
