@@ -3,7 +3,7 @@
 // DB (sqlite) migration utility
 // -----------------------------
 
-$version_min = '1.5.1';
+$version_min = '2.0.1';
 
 if (php_sapi_name() !== 'cli') {
     die("This script must be run from the command line.\n");
@@ -65,32 +65,20 @@ if (!$xml_page) {
     exit(1);
 }
 
-// Build a lookup map from update.xml: version => update element index
-$updateMap = [];
-foreach ($xml_page->update as $idx => $upd) {
-    $ver = strval($upd->version);
-    $updateMap[$ver] = $idx;
-}
-
-// Collect cond.xml versions in order, then reverse, stopping at version_min
-$condVersions = [];
-foreach ($cond_xml->update as $upd) {
-    $ver = strval($upd->version);
-    $condVersions[] = $ver;
-}
-
-// Reverse so we start from the oldest (1.5.1) going up
-$condVersions = array_reverse($condVersions);
-
-// Find start index (at version_min)
-$startIdx = 0;
-foreach ($condVersions as $i => $ver) {
-    if ($ver === $version_min) {
+// Collect indexes in reverse order (oldest first), starting from version_min
+$startIdx = null;
+$updates = $cond_xml->update;
+$count = count($updates);
+for ($i = $count - 1; $i >= 0; $i--) {
+    if (strval($updates[$i]->version) === $version_min) {
         $startIdx = $i;
         break;
     }
 }
-$condVersions = array_slice($condVersions, $startIdx);
+if ($startIdx === null) {
+    echo "version_min '$version_min' not found in cond.xml\n";
+    exit(1);
+}
 
 // Helper: run a single SELECT check query, return true if result is 'true'
 function checkQuery(PDO $pdo, string $query): bool
@@ -118,22 +106,16 @@ function migrateQuery(PDO $pdo, string $query): bool
     }
 }
 
-// Steps 4-6: Iterate versions from version_min upward
+// Steps 4-6: Iterate from version_min upward (indexes match between both XMLs)
 $migrationsPerformed = 0;
-foreach ($condVersions as $condIdx => $version) {
-    // Find the cond entry
-    $condEntry = null;
-    foreach ($cond_xml->update as $upd) {
-        if (strval($upd->version) === $version) {
-            $condEntry = $upd;
-            break;
-        }
-    }
-    if ($condEntry === null) continue;
+for ($i = $startIdx; $i >= 0; $i--) {
+    $condEntry = $cond_xml->update[$i];
+    $migrateEntry = $xml_page->update[$i];
+    $version = strval($condEntry->version);
 
     // Step 5: Check dbType-specific queries (sqlite section in cond.xml)
     $dbTypeQueries = $condEntry->$dbType;
-    if (isset($dbTypeQueries->query) && !empty($dbTypeQueries->query)) {
+    if (!empty($dbTypeQueries->query)) {
         $allTrue = true;
         foreach ($dbTypeQueries->query as $query) {
             if (!checkQuery($pdo, strval($query))) {
@@ -142,26 +124,19 @@ foreach ($condVersions as $condIdx => $version) {
             }
         }
         if ($allTrue) {
-            echo "Migrating DB to version $version (schema)\n";
-            if (isset($updateMap[$version])) {
-                $migrateEntry = $xml_page->update[$updateMap[$version]];
-                $migrateDbQueries = $migrateEntry->$dbType;
-                if (isset($migrateDbQueries->query)) {
-                    foreach ($migrateDbQueries->query as $query) {
-                        if (migrateQuery($pdo, strval($query))) {
-                            $migrationsPerformed++;
-                        }
-                    }
+            echo "Migrating DB to version $version (sqlite)\n";
+            foreach ($migrateEntry->$dbType->query ?? [] as $query) {
+                if (migrateQuery($pdo, strval($query))) {
+                    $migrationsPerformed++;
                 }
             }
         }
     }
 
     // Step 6: Check common (queryes) queries
-    $commonQueries = $condEntry->queryes;
-    if (isset($commonQueries->query) && !empty($commonQueries->query)) {
+    if (!empty($condEntry->queryes->query)) {
         $allTrue = true;
-        foreach ($commonQueries->query as $query) {
+        foreach ($condEntry->queryes->query as $query) {
             if (!checkQuery($pdo, strval($query))) {
                 $allTrue = false;
                 break;
@@ -169,15 +144,9 @@ foreach ($condVersions as $condIdx => $version) {
         }
         if ($allTrue) {
             echo "Migrating DB to version $version\n";
-            if (isset($updateMap[$version])) {
-                $migrateEntry = $xml_page->update[$updateMap[$version]];
-                $migrateCommonQueries = $migrateEntry->queryes;
-                if (isset($migrateCommonQueries->query)) {
-                    foreach ($migrateCommonQueries->query as $query) {
-                        if (migrateQuery($pdo, strval($query))) {
-                            $migrationsPerformed++;
-                        }
-                    }
+            foreach ($migrateEntry->queryes->query ?? [] as $query) {
+                if (migrateQuery($pdo, strval($query))) {
+                    $migrationsPerformed++;
                 }
             }
         }
