@@ -9,6 +9,11 @@
 
     <update>
         <!-- no queries -->
+        <version>3.2.1</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
         <version>3.2</version>
     </update>
 

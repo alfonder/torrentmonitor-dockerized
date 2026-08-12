@@ -3,6 +3,18 @@
     <title>TorrentMonitor Update Schema</title>
 
     <update>
+      <version>3.2.1</version>
+      <description>- rutracker.org: работа восстановлена (требуется добавлять вручную куку и Byparr для обхода заглушки)</description>
+      <files>
+        <file>class/System.class.php</file>
+        <file>class/CurlMultiFetcher.class.php</file>
+        <file>trackers/rutracker.org.engine.php</file>
+        <file>trackers/rutracker.org.search.php</file>
+        <file>changelog.txt</file>
+      </files>
+    </update>
+
+    <update>
       <version>3.2</version>
       <description>- rutracker.org: обход Cloudflare через Byparr не работает, вариантов обхода капчи не нашлось. Добавлена ручная вставка куки на странице учётных данных</description>
       <files>
