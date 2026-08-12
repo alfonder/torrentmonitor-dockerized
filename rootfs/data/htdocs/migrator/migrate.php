@@ -155,7 +155,7 @@ for ($i = $startIdx; $i >= 0; $i--) {
 
 // Step 7: Insert dbVersion record
 try {
-    $pdo->exec("INSERT INTO settings VALUES (41, 'dbVersion', '$systemVersion')");
+    $pdo->exec("INSERT INTO settings VALUES (1, 'dbVersion', '$systemVersion')");
 } catch (PDOException $e) {
     echo "Failed to insert dbVersion: " . $e->getMessage() . "\n";
     exit(1);
