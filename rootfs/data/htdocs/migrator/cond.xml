@@ -80,8 +80,8 @@
         <version>2.1.8</version>
         <queryes>
             <!-- ALTER TABLE `torrentmonitor`.`settings` CHANGE `val` `val` varchar(100) -->
-            <!-- SQLite does not support CHANGE COLUMN; check column type via pragma -->
-            <query>SELECT CASE WHEN type = 'varchar(100)' THEN 'false' ELSE 'true' END FROM pragma_table_info('settings') WHERE name = 'val'</query>
+            <!-- SQLite does not support CHANGE COLUMN; so return always 'false' -->
+            <query>SELECT 'false'</query>
         </queryes>
     </update>
 
