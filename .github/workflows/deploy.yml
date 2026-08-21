@@ -24,17 +24,18 @@ jobs:
           if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
             # For push events on branches, check changed files
             if [[ -z "${{ github.event.before }}" ]]; then
-              echo "skip=false" >> $GITHUB_OUTPUT
-            else
-              CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -v '^\.github/' || echo "")
-              
-              if [[ -z "${CHANGED_FILES}" ]]; then
-                echo "Only .github files changed, skipping build and deploy"
-                echo "skip=true" >> $GITHUB_OUTPUT
-              else
                 echo "skip=false" >> $GITHUB_OUTPUT
+              else
+                # Exclude .github/, wiki/, and README files from the changed files list
+                CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -vE '^(\.github/|wiki/|README\.md$|README-EN\.md$)' || echo "")
+
+                if [[ -z "${CHANGED_FILES}" ]]; then
+                  echo "Only .github, wiki or README files changed, skipping build and deploy"
+                  echo "skip=true" >> $GITHUB_OUTPUT
+                else
+                  echo "skip=false" >> $GITHUB_OUTPUT
+                fi
               fi
-            fi
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
