@@ -3,8 +3,60 @@
     <title>TorrentMonitor Update Schema</title>
 
     <update>
+      <version>3.2.4</version>
+      <description>- корректирующее обновление БД для работы FlareSolverr</description>
+      <queryes>
+        <query>INSERT INTO settings VALUES (44, 'flaresolverrUrl', '');</query>
+      </queryes>
+    </update>
+
+    <update>
+      <version>3.2.3</version>
+      <description>- rutracker.org: работа восстановлена через FlareSolverr (вместе с автоматической авторизацией)</description>
+      <files>
+        <file>class/System.class.php</file>
+        <file>class/CurlMultiFetcher.class.php</file>
+        <file>class/Database.class.php</file>
+        <file>class/Notification.class.php</file>
+        <file>trackers/rutracker.org.engine.php</file>
+        <file>trackers/rutracker.org.search.php</file>
+        <file>action.php</file>
+        <file>include/credentials.php</file>
+        <file>changelog.txt</file>
+      </files>
+    </update>
+    
+    <update>
+        <version>3.2.2</version>
+        <description>
+            - #235 — проброс прокси в FlareSolverr
+            - #236 — поддержка уведомлений Gotify (спасибо c4uran за оба коммита)
+        </description>
+        <files>
+            <file>class/CurlMultiFetcher.class.php</file>
+            <file>class/Notification.class.php</file>
+            <file>class/System.class.php</file>
+            <file>trackers/rutracker.org.engine.php</file>
+            <file>trackers/rutracker.org.search.php</file>
+            <file>changelog.txt</file>
+        </files>
+        <mysql>
+            <query>INSERT INTO `notifications` (`id`, `service`, `address`, `type`) VALUES (13,'Gotify','', 'notification'), (14,'Gotify','', 'warning')</query>
+        </mysql>
+        <sqlite>
+            <query>INSERT INTO "notifications" VALUES(13,'Gotify','','notification')</query>
+            <query>INSERT INTO "notifications" VALUES(14,'Gotify','','warning')</query>
+        </sqlite>
+        <postgresql>
+            <query>INSERT INTO notifications VALUES (13, 'Gotify', '', 'notification')</query>
+            <query>INSERT INTO notifications VALUES (14, 'Gotify', '', 'warning')</query>
+            <query>ALTER SEQUENCE "auto_id_notifications" RESTART WITH 15</query>
+        </postgresql>
+    </update>
+    
+    <update>
       <version>3.2.1</version>
-      <description>- rutracker.org: работа восстановлена (требуется добавлять вручную куку и Byparr для обхода заглушки)</description>
+      <description>- rutracker.org: работа восстановлена (требуется добавлять вручную куку и Byparr для обхода заглушки). спасибо Alexey Milko</description>
       <files>
         <file>class/System.class.php</file>
         <file>class/CurlMultiFetcher.class.php</file>

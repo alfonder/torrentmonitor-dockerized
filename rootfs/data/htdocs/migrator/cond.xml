@@ -7,6 +7,31 @@
 <body>
     <title>TorrentMonitor Update Conditions</title>
 
+    <!-- version 3.2.4: queryes section -->
+    <update>
+        <version>3.2.4</version>
+        <queryes>
+            <!-- INSERT INTO settings VALUES (44, 'flaresolverrUrl', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 44 AND key = 'flaresolverrUrl'</query>
+        </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>3.2.3</version>
+    </update>
+
+    <!-- version 3.2.2: sqlite section -->
+    <update>
+        <version>3.2.2</version>
+        <sqlite>
+            <!-- INSERT INTO "notifications" VALUES(13,'Gotify','','notification') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 13 AND service = 'Gotify' AND type = 'notification'</query>
+            <!-- INSERT INTO "notifications" VALUES(14,'Gotify','','warning') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 14 AND service = 'Gotify' AND type = 'warning'</query>
+        </sqlite>
+    </update>
+
     <update>
         <!-- no queries -->
         <version>3.2.1</version>
