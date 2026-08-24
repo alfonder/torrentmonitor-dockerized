@@ -7,6 +7,16 @@
 <body>
     <title>TorrentMonitor Update Conditions</title>
 
+    <update>
+        <!-- no queries -->
+        <version>3.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>3.1</version>
+    </update>
+
     <!-- version 3.0: sqlite section -->
     <update>
         <version>3.0</version>
@@ -18,6 +28,46 @@
             <!-- INSERT OR IGNORE INTO "settings" ("key", "val") VALUES ('qbitCategory', '') -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE key = 'qbitCategory'</query>
         </sqlite>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2.1</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.9</version>
     </update>
 
     <!-- version 2.1.8: queryes section (generic SQL, no sqlite-specific block) -->
@@ -39,6 +89,36 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>2.1.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.1.1</version>
+    </update>
+
     <!-- version 2.1: queryes section -->
     <update>
         <version>2.1</version>
@@ -48,6 +128,61 @@
             <!-- INSERT INTO credentials VALUES ('23', 'kinozal.guru', ...) -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 23 AND tracker = 'kinozal.guru'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.9</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.8</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>2.0.1</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.9</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.8</version>
     </update>
 
     <!-- version 1.8.9.7: queryes section (UPDATE-based tracker rename) -->
@@ -65,6 +200,31 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9.2</version>
+    </update>
+
     <!-- version 1.8.9.1: queryes section (DELETE-based cleanup) -->
     <update>
         <version>1.8.9.1</version>
@@ -74,6 +234,51 @@
             <!-- DELETE FROM credentials WHERE tracker = 'tv.mekc.info' -->
             <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tv.mekc.info'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.9</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.8</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.8.1</version>
     </update>
 
     <!-- version 1.8.0: queryes section -->
@@ -94,6 +299,16 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.7.8</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.7.7</version>
+    </update>
+
     <!-- version 1.7.6: queryes section -->
     <update>
         <version>1.7.6</version>
@@ -111,6 +326,11 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.7.4</version>
+    </update>
+
     <!-- version 1.7.3: queryes section -->
     <update>
         <version>1.7.3</version>
@@ -122,6 +342,26 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.7.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.7.1</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.6.9.1</version>
+    </update>
+
     <!-- version 1.6.9: queryes section -->
     <update>
         <version>1.6.9</version>
@@ -129,6 +369,11 @@
             <!-- INSERT INTO credentials VALUES ('22', 'baibako.tv_forum', ...) -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 22 AND tracker = 'baibako.tv_forum'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.6.8</version>
     </update>
 
     <!-- version 1.6.7: queryes section -->
@@ -151,6 +396,16 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.6.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.6.4</version>
+    </update>
+
     <!-- version 1.6.3: queryes section -->
     <update>
         <version>1.6.3</version>
@@ -162,6 +417,16 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.6.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.6.1</version>
+    </update>
+
     <!-- version 1.6: queryes section -->
     <update>
         <version>1.6</version>
@@ -171,6 +436,41 @@
             <!-- INSERT INTO settings VALUES (39, 'sentUpdateNotification', '0') -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 39 AND key = 'sentUpdateNotification'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.8</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.5.2</version>
     </update>
 
     <!-- version 1.5.1: queryes section -->
@@ -237,6 +537,11 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.4.8</version>
+    </update>
+
     <!-- version 1.4.7: sqlite section -->
     <update>
         <version>1.4.7</version>
@@ -255,6 +560,11 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.4.5</version>
+    </update>
+
     <!-- version 1.4.4: queryes section -->
     <update>
         <version>1.4.4</version>
@@ -264,6 +574,11 @@
             <!-- INSERT INTO notifications VALUES (12, 'Telegram', '', 'warning') -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 12 AND service = 'Telegram' AND type = 'warning'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.4.3</version>
     </update>
 
     <!-- version 1.4.2: sqlite section -->
@@ -302,6 +617,11 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.3.1</version>
+    </update>
+
     <!-- version 1.3: queryes section -->
     <update>
         <version>1.3</version>
@@ -311,6 +631,31 @@
             <!-- UPDATE `torrent` SET `tracker` = 'nnmclub.to' WHERE tracker = 'nnm-club.me' -->
             <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnm-club.me'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.9</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.8</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.5</version>
     </update>
 
     <!-- version 1.2.9.3: sqlite section -->
@@ -323,6 +668,21 @@
         </sqlite>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9.1</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.9</version>
+    </update>
+
     <!-- version 1.2.8: queryes section -->
     <update>
         <version>1.2.8</version>
@@ -332,6 +692,31 @@
             <!-- INSERT INTO notifications VALUES (10, 'Pushall', '', 'warning') -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 10 AND service = 'Pushall' AND type = 'warning'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.7</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.2.3.1</version>
     </update>
 
     <!-- version 1.2.3: sqlite section + queryes section -->
@@ -375,6 +760,11 @@
         </queryes>
     </update>
 
+    <update>
+        <!-- no queries -->
+        <version>1.2.1</version>
+    </update>
+
     <!-- version 1.2: queryes section -->
     <update>
         <version>1.2</version>
@@ -382,6 +772,16 @@
             <!-- INSERT INTO credentials VALUES (3, 'lostfilm.tv', ...) -->
             <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 3 AND tracker = 'lostfilm.tv'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.1.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.1.1</version>
     </update>
 
     <!-- version 1.1: sqlite section + queryes section -->
@@ -427,6 +827,36 @@
             <!-- DELETE FROM `warning` WHERE `where` = 'lostfilm.tv' -->
             <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM warning WHERE "where" = 'lostfilm.tv'</query>
         </queryes>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.6</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.5</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.4</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.3</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.2</version>
+    </update>
+
+    <update>
+        <!-- no queries -->
+        <version>1.0.1</version>
     </update>
 
     <!-- version 0.9.8: queryes section -->
