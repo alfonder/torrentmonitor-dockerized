@@ -71,6 +71,9 @@ chmod 777 /tmp
 test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm85 /usr/bin/php-fpm
 test -f /usr/bin/php || ln -s /usr/bin/php85 /usr/bin/php
 
+# Check if the database needs to be upgraded/migrated
+php /data/htdocs/migrator/migrate.php
+
 # Start apps
 php-fpm
 nginx -g 'daemon off;' &
