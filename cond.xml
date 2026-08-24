@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Condition checks for update.xml db_update sections.
+  Each <query> returns 'true' if the corresponding update.xml query has NOT yet been applied.
+  Use these to determine whether a db migration step still needs to run.
+-->
+<body>
+    <title>TorrentMonitor Update Conditions</title>
+
+    <!-- version 3.0: sqlite section -->
+    <update>
+        <version>3.0</version>
+        <sqlite>
+            <!-- ALTER TABLE "torrent" ADD COLUMN "category" VARCHAR(100) NOT NULL DEFAULT '' -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'category'</query>
+            <!-- INSERT OR IGNORE INTO "settings" ("key", "val") VALUES ('ApiKey', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE key = 'ApiKey'</query>
+            <!-- INSERT OR IGNORE INTO "settings" ("key", "val") VALUES ('qbitCategory', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE key = 'qbitCategory'</query>
+        </sqlite>
+    </update>
+
+    <!-- version 2.1.8: queryes section (generic SQL, no sqlite-specific block) -->
+    <update>
+        <version>2.1.8</version>
+        <queryes>
+            <!-- ALTER TABLE `torrentmonitor`.`settings` CHANGE `val` `val` varchar(100) -->
+            <!-- SQLite does not support CHANGE COLUMN; check column type via pragma -->
+            <query>SELECT CASE WHEN type = 'varchar(100)' THEN 'false' ELSE 'true' END FROM pragma_table_info('settings') WHERE name = 'val'</query>
+        </queryes>
+    </update>
+
+    <!-- version 2.1.7: queryes section -->
+    <update>
+        <version>2.1.7</version>
+        <queryes>
+            <!-- INSERT INTO settings VALUES (40, 'userAgent', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 40 AND key = 'userAgent'</query>
+        </queryes>
+    </update>
+
+    <!-- version 2.1: queryes section -->
+    <update>
+        <version>2.1</version>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES ('22', 'kinozal.tv', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 22 AND tracker = 'kinozal.tv'</query>
+            <!-- INSERT INTO credentials VALUES ('23', 'kinozal.guru', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 23 AND tracker = 'kinozal.guru'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.8.9.7: queryes section (UPDATE-based tracker rename) -->
+    <update>
+        <version>1.8.9.7</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'rutor.is' WHERE tracker = 'rutor.org' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rutor.org'</query>
+            <!-- UPDATE credentials SET tracker = 'rutor.is' WHERE tracker = 'rutor.info' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rutor.info'</query>
+            <!-- UPDATE torrent SET tracker = 'rutor.is' WHERE tracker = 'rutor.org' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'rutor.org'</query>
+            <!-- UPDATE torrent SET tracker = 'rutor.is' WHERE tracker = 'rutor.info' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'rutor.info'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.8.9.1: queryes section (DELETE-based cleanup) -->
+    <update>
+        <version>1.8.9.1</version>
+        <queryes>
+            <!-- DELETE FROM credentials WHERE tracker = 'tracker.0day.kiev.ua' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tracker.0day.kiev.ua'</query>
+            <!-- DELETE FROM credentials WHERE tracker = 'tv.mekc.info' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tv.mekc.info'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.8.0: queryes section -->
+    <update>
+        <version>1.8.0</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'casstudio.tk' WHERE id = 9 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 9 AND tracker != 'casstudio.tk'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.7.9: queryes section -->
+    <update>
+        <version>1.7.9</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'casstudio.tk' WHERE id = 9 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 9 AND tracker != 'casstudio.tk'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.7.6: queryes section -->
+    <update>
+        <version>1.7.6</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'nnmclub.to' WHERE id = 2 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 2 AND tracker != 'nnmclub.to'</query>
+            <!-- UPDATE `torrent` SET `tracker` = 'nnmclub.to' WHERE tracker = 'nnm-club.name' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnm-club.name'</query>
+            <!-- DELETE FROM credentials WHERE tracker = 'novafilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'novafilm.tv'</query>
+            <!-- DELETE FROM torrent WHERE tracker = 'novafilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'novafilm.tv'</query>
+            <!-- INSERT INTO credentials VALUES ('23', 'riperam.org', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 23 AND tracker = 'riperam.org'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.7.3: queryes section -->
+    <update>
+        <version>1.7.3</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'nnmclub.to' WHERE id = 2 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 2 AND tracker != 'nnmclub.to'</query>
+            <!-- UPDATE `torrent` SET `tracker` = 'nnmclub.to' WHERE tracker = 'nnm-club.name' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnm-club.name'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.6.9: queryes section -->
+    <update>
+        <version>1.6.9</version>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES ('22', 'baibako.tv_forum', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 22 AND tracker = 'baibako.tv_forum'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.6.7: queryes section -->
+    <update>
+        <version>1.6.7</version>
+        <queryes>
+            <!-- UPDATE `torrent` SET `tracker` = 'nnm-club.name' WHERE tracker = 'nnmclub.to' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnmclub.to'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.6.6: queryes section -->
+    <update>
+        <version>1.6.6</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'nnm-club.name' WHERE id = 2 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 2 AND tracker != 'nnm-club.name'</query>
+            <!-- UPDATE `torrent` SET `tracker` = 'nnm-club.name' WHERE tracker = 'nnm-club.me' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnm-club.me'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.6.3: queryes section -->
+    <update>
+        <version>1.6.3</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'tfile.cc' WHERE tracker = 'tfile.co' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tfile.co'</query>
+            <!-- UPDATE torrent SET tracker = 'tfile.cc' WHERE tracker = 'tfile.co' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'tfile.co'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.6: queryes section -->
+    <update>
+        <version>1.6</version>
+        <queryes>
+            <!-- INSERT INTO settings VALUES (38, 'autoUpdate', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 38 AND key = 'autoUpdate'</query>
+            <!-- INSERT INTO settings VALUES (39, 'sentUpdateNotification', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 39 AND key = 'sentUpdateNotification'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.5.1: queryes section -->
+    <update>
+        <version>1.5.1</version>
+        <queryes>
+            <!-- UPDATE torrent SET tracker = 'kinozal.me' WHERE tracker = 'kinozal.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'kinozal.tv'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.5: sqlite section + queryes section -->
+    <update>
+        <version>1.5</version>
+        <sqlite>
+            <!-- ALTER TABLE buffer ADD COLUMN timestamp DATE DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('buffer') WHERE name = 'timestamp'</query>
+            <!-- ALTER TABLE credentials ADD COLUMN necessarily INTEGER DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('credentials') WHERE name = 'necessarily'</query>
+        </sqlite>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES ('21', 'booktracker.org', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 21 AND tracker = 'booktracker.org'</query>
+            <!-- UPDATE credentials SET tracker = 'kinozal.me' WHERE id = 7 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 7 AND tracker != 'kinozal.me'</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'anidub.com' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'anidub.com' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'animelayer.ru' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'animelayer.ru' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'baibako.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'baibako.tv' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'casstudio.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'casstudio.tv' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'hamsterstudio.org' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'hamsterstudio.org' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'kinozal.me' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'kinozal.me' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 0 WHERE tracker = 'lostfilm-mirror' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'lostfilm-mirror' AND (necessarily IS NULL OR necessarily != 0)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'lostfilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'lostfilm.tv' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'newstudio.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'newstudio.tv' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'nnmclub.to' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'nnmclub.to' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'novafilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'novafilm.tv' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'pornolab.net' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'pornolab.net' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'rustorka.com' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rustorka.com' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 0 WHERE tracker = 'rutor.org' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rutor.org' AND (necessarily IS NULL OR necessarily != 0)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'rutracker.org' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rutracker.org' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 0 WHERE tracker = 'tfile.co' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tfile.co' AND (necessarily IS NULL OR necessarily != 0)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'tracker.0day.kiev.ua' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tracker.0day.kiev.ua' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE credentials SET necessarily = 1 WHERE tracker = 'tv.mekc.info' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'tv.mekc.info' AND (necessarily IS NULL OR necessarily != 1)</query>
+            <!-- UPDATE torrent SET tracker = 'kinozal.me' WHERE tracker = 'kinozal.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'kinozal.tv'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.4.7: sqlite section -->
+    <update>
+        <version>1.4.7</version>
+        <sqlite>
+            <!-- CREATE TABLE IF NOT EXISTS `temp` (...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM sqlite_master WHERE type = 'table' AND name = 'temp'</query>
+        </sqlite>
+    </update>
+
+    <!-- version 1.4.6: queryes section -->
+    <update>
+        <version>1.4.6</version>
+        <queryes>
+            <!-- DROP TABLE temp -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM sqlite_master WHERE type = 'table' AND name = 'temp'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.4.4: queryes section -->
+    <update>
+        <version>1.4.4</version>
+        <queryes>
+            <!-- INSERT INTO notifications VALUES (11, 'Telegram', '', 'notification') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 11 AND service = 'Telegram' AND type = 'notification'</query>
+            <!-- INSERT INTO notifications VALUES (12, 'Telegram', '', 'warning') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 12 AND service = 'Telegram' AND type = 'warning'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.4.2: sqlite section -->
+    <update>
+        <version>1.4.2</version>
+        <sqlite>
+            <!-- ALTER TABLE torrent ADD COLUMN closed INTEGER DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'closed'</query>
+        </sqlite>
+    </update>
+
+    <!-- version 1.4.1: sqlite section -->
+    <update>
+        <version>1.4.1</version>
+        <sqlite>
+            <!-- ALTER TABLE warning ADD COLUMN t_id INTEGER DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('warning') WHERE name = 't_id'</query>
+        </sqlite>
+    </update>
+
+    <!-- version 1.4: sqlite section + queryes section -->
+    <update>
+        <version>1.4</version>
+        <sqlite>
+            <!-- ALTER TABLE credentials ADD COLUMN type varchar(32) DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('credentials') WHERE name = 'type'</query>
+            <!-- ALTER TABLE torrent ADD COLUMN pause INTEGER NOT NULL DEFAULT '0' -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'pause'</query>
+            <!-- ALTER TABLE torrent ADD COLUMN error INTEGER NOT NULL DEFAULT '0' -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'error'</query>
+        </sqlite>
+        <queryes>
+            <!-- UPDATE credentials SET type = 'forum'/'RSS' WHERE tracker = ... -->
+            <!-- Check a representative tracker; if type is still NULL the update hasn't run -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE tracker = 'rutracker.org' AND type IS NULL</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.3: queryes section -->
+    <update>
+        <version>1.3</version>
+        <queryes>
+            <!-- UPDATE credentials SET tracker = 'nnmclub.to' WHERE id = 2 -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 2 AND tracker != 'nnmclub.to'</query>
+            <!-- UPDATE `torrent` SET `tracker` = 'nnmclub.to' WHERE tracker = 'nnm-club.me' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'nnm-club.me'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.2.9.3: sqlite section -->
+    <update>
+        <version>1.2.9.3</version>
+        <sqlite>
+            <!-- ALTER TABLE temp ADD COLUMN name varchar(200) DEFAULT NULL -->
+            <!-- Note: SQLite does not support DROP COLUMN, so only the ADD is checkable -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('temp') WHERE name = 'name'</query>
+        </sqlite>
+    </update>
+
+    <!-- version 1.2.8: queryes section -->
+    <update>
+        <version>1.2.8</version>
+        <queryes>
+            <!-- INSERT INTO notifications VALUES (9, 'Pushall', '', 'notification') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 9 AND service = 'Pushall' AND type = 'notification'</query>
+            <!-- INSERT INTO notifications VALUES (10, 'Pushall', '', 'warning') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 10 AND service = 'Pushall' AND type = 'warning'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.2.3: sqlite section + queryes section -->
+    <update>
+        <version>1.2.3</version>
+        <sqlite>
+            <!-- CREATE TABLE `notifications` (...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM sqlite_master WHERE type = 'table' AND name = 'notifications'</query>
+            <!-- ALTER TABLE torrent ADD COLUMN script varchar(100) DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'script'</query>
+        </sqlite>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES ('18', 'hamsterstudio.org', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 18 AND tracker = 'hamsterstudio.org'</query>
+            <!-- INSERT INTO credentials VALUES ('19', 'tv.mekc.info', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 19 AND tracker = 'tv.mekc.info'</query>
+            <!-- INSERT INTO notifications VALUES (1..8, ...) - check the first and last -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 1 AND service = 'E-mail' AND type = 'notification'</query>
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM notifications WHERE id = 8 AND service = 'Pushover' AND type = 'warning'</query>
+            <!-- DELETE FROM settings WHERE id = '25'/'26'/'27'/'28' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM settings WHERE id IN (25, 26, 27, 28)</query>
+            <!-- INSERT INTO settings VALUES (31, 'debugFor', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 31 AND key = 'debugFor'</query>
+            <!-- INSERT INTO settings VALUES (33, 'sendUpdateService', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 33 AND key = 'sendUpdateService'</query>
+            <!-- INSERT INTO settings VALUES (35, 'sendWarningService', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 35 AND key = 'sendWarningService'</query>
+            <!-- INSERT INTO settings VALUES (37, 'proxyType', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 37 AND key = 'proxyType'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.2.2: queryes section -->
+    <update>
+        <version>1.2.2</version>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES (17, 'lostfilm-mirror', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 17 AND tracker = 'lostfilm-mirror'</query>
+            <!-- INSERT INTO settings VALUES (32, 'httpTimeout', '15') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 32 AND key = 'httpTimeout'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.2: queryes section -->
+    <update>
+        <version>1.2</version>
+        <queryes>
+            <!-- INSERT INTO credentials VALUES (3, 'lostfilm.tv', ...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 3 AND tracker = 'lostfilm.tv'</query>
+        </queryes>
+    </update>
+
+    <!-- version 1.1: sqlite section + queryes section -->
+    <update>
+        <version>1.1</version>
+        <sqlite>
+            <!-- CREATE TABLE "news" (...) -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM sqlite_master WHERE type = 'table' AND name = 'news'</query>
+            <!-- ALTER TABLE "torrent" ADD auto_update INTEGER NOT NULL DEFAULT '0' -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'auto_update'</query>
+            <!-- ALTER TABLE "credentials" ADD passkey varchar(255) DEFAULT NULL -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('credentials') WHERE name = 'passkey'</query>
+            <!-- ALTER TABLE "torrent" MODIFY (torrent_id varchar(150)) — SQLite does not support MODIFY; check column exists -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM pragma_table_info('torrent') WHERE name = 'torrent_id'</query>
+            <!-- INSERT INTO "settings" VALUES (4, 'sendWarning', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 4 AND key = 'sendWarning'</query>
+            <!-- INSERT INTO "settings" VALUES (19, 'serverAddress', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 19 AND key = 'serverAddress'</query>
+            <!-- INSERT INTO "settings" VALUES (20, 'deleteDistribution', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 20 AND key = 'deleteDistribution'</query>
+            <!-- INSERT INTO "settings" VALUES (24, 'sendUpdate', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 24 AND key = 'sendUpdate'</query>
+            <!-- INSERT INTO "settings" VALUES (25, 'sendUpdateEmail', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 25 AND key = 'sendUpdateEmail'</query>
+            <!-- INSERT INTO "settings" VALUES (26, 'sendUpdatePushover', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 26 AND key = 'sendUpdatePushover'</query>
+            <!-- INSERT INTO "settings" VALUES (27, 'sendWarningEmail', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 27 AND key = 'sendWarningEmail'</query>
+            <!-- INSERT INTO "settings" VALUES (28, 'sendWarningPushover', '') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 28 AND key = 'sendWarningPushover'</query>
+            <!-- INSERT INTO "settings" VALUES (29, 'debug', '0') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 29 AND key = 'debug'</query>
+            <!-- INSERT INTO "settings" VALUES (30, 'rss', '1') -->
+            <query>SELECT CASE WHEN COUNT(*) = 0 THEN 'true' ELSE 'false' END FROM settings WHERE id = 30 AND key = 'rss'</query>
+        </sqlite>
+        <queryes>
+            <!-- DELETE FROM `settings` WHERE `id` = '1'/'2'/'4'/'15' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM settings WHERE id IN (1, 2, 4, 15)</query>
+            <!-- DELETE FROM `credentials` WHERE `id` = '3' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM credentials WHERE id = 3</query>
+            <!-- DELETE FROM `torrent` WHERE `tracker` = 'lostfilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM torrent WHERE tracker = 'lostfilm.tv'</query>
+            <!-- DELETE FROM `warning` WHERE `where` = 'lostfilm.tv' -->
+            <query>SELECT CASE WHEN COUNT(*) > 0 THEN 'true' ELSE 'false' END FROM warning WHERE "where" = 'lostfilm.tv'</query>
+        </queryes>
+    </update>
+
+    <!-- version 0.9.8: queryes section -->
+    <update>
+        <version>0.9.8</version>
+        <queryes>
+            <!-- ALTER TABLE `torrent` CHANGE `torrent_id` `torrent_id` VARCHAR(100) -->
+            <!-- SQLite: check current type of torrent_id column -->
+            <query>SELECT CASE WHEN type = 'VARCHAR(100)' THEN 'false' ELSE 'true' END FROM pragma_table_info('torrent') WHERE name = 'torrent_id'</query>
+        </queryes>
+    </update>
+
+</body>
