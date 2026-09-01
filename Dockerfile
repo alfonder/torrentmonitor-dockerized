@@ -4,7 +4,6 @@ FROM alpine:3.24.1 AS apk-builder
 RUN apk --no-cache add \
         alpine-sdk \
         sudo \
-        wget \
         && \
     adduser -D builduser && \
     addgroup builduser abuild && \
@@ -13,6 +12,7 @@ RUN apk --no-cache add \
     chmod 0400 /etc/sudoers.d/wheel
 
 COPY patches/libiconv-1.15-loop_wchar.patch /tmp/
+COPY patches/gnu-libiconv-APKBUILD /tmp/
 
 USER builduser
 WORKDIR /home/builduser
@@ -23,7 +23,7 @@ RUN abuild-keygen -an -q && \
     sudo cp /home/builduser/.abuild/builder.rsa.pub /etc/apk/keys/builder.rsa.pub && \
     echo 'PACKAGER_PRIVKEY="/home/builduser/.abuild/builder.rsa"' > /home/builduser/.abuild/abuild.conf && \
     cp /home/builduser/.abuild/builder.rsa.pub /tmp/builder.rsa.pub && \
-    wget -O APKBUILD "https://gitlab.alpinelinux.org/alpine/aports/-/raw/3.13-stable/community/gnu-libiconv/APKBUILD" && \
+    cp /tmp/gnu-libiconv-APKBUILD APKBUILD && \
     abuild checksum && \
     abuild deps && \
     abuild fetch && \
