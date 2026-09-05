@@ -1,0 +1,23 @@
+--- a/include/check.php
++++ b/include/check.php
+@@ -310,6 +310,20 @@
+ } ?>
+ 
+ </div>
++<?php
++$fsUrl = $dbOk ? trim((string) Database::getSetting('flaresolverrUrl')) : '';
++if ($fsUrl !== '') {
++    $probe = Sys::probeFlareSolverr($fsUrl);
++?>
++<div class="check">
++    <div class="check-title">FlareSolverr / Byparr</div>
++<?php if ($probe['ok']) { ?>
++    <div class="check-item">FlareSolverr / Byparr по адресу <strong><?= htmlspecialchars($fsUrl, ENT_QUOTES) ?></strong> доступен: <?= htmlspecialchars($probe['detail'], ENT_QUOTES) ?>.</div>
++<?php } else { ?>
++    <div class="check-item --error">FlareSolverr / Byparr по адресу <strong><?= htmlspecialchars($fsUrl, ENT_QUOTES) ?></strong> недоступен: <?= htmlspecialchars($probe['detail'], ENT_QUOTES) ?></div>
++<?php } ?>
++</div>
++<?php } ?>
+ <div class="check">
+     <div class="check-title">Настройки трекеров</div>
+ 

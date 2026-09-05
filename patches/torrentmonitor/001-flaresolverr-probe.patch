@@ -1,0 +1,81 @@
+--- a/class/System.class.php
++++ b/class/System.class.php
+@@ -854,6 +854,78 @@
+             Errors::setWarnings('TorrentMonitor', 'update_news');
+     }
+ 
++    public static function probeFlareSolverr($url = null)
++    {
++        if ($url === null)
++            $url = Database::getSetting('flaresolverrUrl');
++        $url = trim((string) $url);
++
++        if ($url === '')
++            return array('ok' => false, 'reason' => 'empty', 'detail' => 'URL не задан. Укажите адрес FlareSolverr, например http://flaresolverr:8191 (не localhost из другого контейнера).');
++        if ( ! preg_match('#^https?://#i', $url))
++            return array('ok' => false, 'reason' => 'bad_url', 'detail' => 'Нужен полный URL с http:// или https://');
++
++        $healthUrl = rtrim($url, '/').'/health';
++        $ch = curl_init($healthUrl);
++        curl_setopt_array($ch, array(
++            CURLOPT_RETURNTRANSFER => 1,
++            CURLOPT_TIMEOUT        => 5,
++            CURLOPT_CONNECTTIMEOUT => 5,
++            CURLOPT_FOLLOWLOCATION => 1,
++            CURLOPT_HTTPGET        => 1,
++        ));
++        $started = microtime(true);
++        $body = curl_exec($ch);
++        $errno = curl_errno($ch);
++        $error = curl_error($ch);
++        $http = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
++        curl_close($ch);
++        $ms = (int) round((microtime(true) - $started) * 1000);
++
++        if ($errno)
++            return array('ok' => false, 'reason' => 'unreachable', 'detail' => $error.' ('.$ms.' мс). Контейнер FlareSolverr может быть остановлен, не в той сети, или ему не хватает памяти.');
++        if ($http >= 200 && $http < 300 && $body !== false && $body !== '')
++        {
++            $data = json_decode($body, true);
++            $status = is_array($data) && isset($data['status']) ? (string) $data['status'] : '';
++            $version = is_array($data) && isset($data['version']) ? (string) $data['version'] : '';
++            $ok = ($status === 'ok' || $status === 'OK' || $http == 200);
++            $detail = 'HTTP '.$http.', '.$ms.' мс';
++            if ($version !== '')
++                $detail .= ', version '.$version;
++            if ($ok)
++                return array('ok' => true, 'reason' => '', 'detail' => $detail);
++            return array('ok' => false, 'reason' => 'bad_status', 'detail' => $detail);
++        }
++
++        $probe = json_encode(array(
++            'cmd'        => 'request.get',
++            'url'        => 'https://xml.tormon.ru/version.xml',
++            'maxTimeout' => 10000,
++        ));
++        $ch = curl_init(rtrim($url, '/').'/v1');
++        curl_setopt_array($ch, array(
++            CURLOPT_RETURNTRANSFER => 1,
++            CURLOPT_TIMEOUT        => 15,
++            CURLOPT_CONNECTTIMEOUT => 5,
++            CURLOPT_POST           => 1,
++            CURLOPT_POSTFIELDS     => $probe,
++            CURLOPT_HTTPHEADER     => array('Content-Type: application/json'),
++        ));
++        $body = curl_exec($ch);
++        $errno = curl_errno($ch);
++        $error = curl_error($ch);
++        $http = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
++        curl_close($ch);
++        if ($errno)
++            return array('ok' => false, 'reason' => 'unreachable', 'detail' => '/health HTTP '.$http.'; /v1: '.$error);
++        $data = json_decode((string) $body, true);
++        if (isset($data['solution']))
++            return array('ok' => true, 'reason' => '', 'detail' => 'POST /v1 OK (HTTP '.$http.')');
++        $msg = isset($data['message']) ? $data['message'] : substr((string) $body, 0, 160);
++        return array('ok' => false, 'reason' => 'unreachable', 'detail' => 'HTTP '.$http.' '.$msg);
++    }
++
+     //ф-ция преобразования true/false в int
+     public static function strBoolToInt($value)
+     {
