@@ -62,7 +62,8 @@ sed -i "s/listen[[:space:]]*[0-9][0-9]*;/listen ${NGINX_PORT};/" /etc/nginx/conf
 
 # Set owner/permissions for app directory
 chown -R nginx:nginx /data/htdocs
-chmod -R 0644 /data/htdocs
+find /data/htdocs -type f -exec chmod 0644 {} \;
+find /data/htdocs -type d -exec chmod 0755 {} \;
 
 # Write temp files by all
 chmod 0777 /tmp
