@@ -1,0 +1,70 @@
+--- a/class/qBittorrent.class.php
++++ b/class/qBittorrent.class.php
+@@ -106,32 +106,46 @@
+         curl_close($ch);
+ 
+         //ожидаем код 200 при успешном добавлении нового и код 202, если торрент уже существует
++        // (202 = pending metadata, qBittorrent 5.2+)
+         if ($httpCode >= 200 && $httpCode <= 204) {
+-            // qBittorrent 5.x возвращает хэш прямо в теле ответа
++            $hashNew = '';
+             $addData = json_decode($addResponse, true);
+-            if ( ! empty($addData['added_torrent_ids'][0]))
+-            {
+-                $hashNew = $addData['added_torrent_ids'][0];
+-            }
+-            else
++            if (is_array($addData) && ! empty($addData['added_torrent_ids'][0]) && is_scalar($addData['added_torrent_ids'][0]))
++                $hashNew = (string) $addData['added_torrent_ids'][0];
++
++            if ($hashNew === '')
+             {
+-                // fallback для старых версий qBit: ждём и запрашиваем последний добавленный
+-                sleep(3);
+-                $data = array(
+-                    'filter' => 'all',
+-                    'limit' => '1',
+-                    'sort' => 'added_on',
+-                    'reverse' => 'true'
+-                );
+-                curl_setopt($MainCurl, CURLOPT_URL, $torrentAddress."/api/v2/torrents/info");
+-                curl_setopt($MainCurl, CURLOPT_POSTFIELDS, http_build_query($data));
+-                $response = curl_exec($MainCurl);
+-                $rdata = json_decode($response)[0];
+-                $hashNew = $rdata->hash;
++                // fallback: ждём появления в torrents/info (старые qBit / pending URL-add)
++                for ($try = 0; $try < 3; $try++)
++                {
++                    sleep($try === 0 ? 3 : 2);
++                    $data = array(
++                        'filter'  => 'all',
++                        'limit'   => '1',
++                        'sort'    => 'added_on',
++                        'reverse' => 'true'
++                    );
++                    curl_setopt($MainCurl, CURLOPT_URL, $torrentAddress."/api/v2/torrents/info");
++                    curl_setopt($MainCurl, CURLOPT_POSTFIELDS, http_build_query($data));
++                    $response = curl_exec($MainCurl);
++                    $list = json_decode($response, true);
++                    if (is_array($list) && ! empty($list[0]) && is_array($list[0]))
++                    {
++                        $row = $list[0];
++                        if ( ! empty($row['hash']))
++                            $hashNew = (string) $row['hash'];
++                        elseif ( ! empty($row['infohash_v1']))
++                            $hashNew = (string) $row['infohash_v1'];
++                        elseif ( ! empty($row['infohash_v2']))
++                            $hashNew = (string) $row['infohash_v2'];
++                        if ($hashNew !== '')
++                            break;
++                    }
++                }
+             }
+ 
+-            #обновляем hash в базе
+-            Database::updateHash($id, $hashNew);
++            if ($hashNew !== '')
++                Database::updateHash($id, $hashNew);
+ 
+             //сбрасываем варнинг
+             Database::clearWarnings('qBittorrent');
