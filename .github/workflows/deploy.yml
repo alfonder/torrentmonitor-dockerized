@@ -3,6 +3,12 @@ name: Build and Deploy image
 on:
   push:
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+  attestations: write
+
 env:
   PLATFORMS: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64"
   IMAGE_NAME: "torrentmonitor"
@@ -26,14 +32,17 @@ jobs:
             if [[ -z "${{ github.event.before }}" ]]; then
                 echo "skip=false" >> $GITHUB_OUTPUT
               else
-                # Exclude .github/, wiki/, and README files from the changed files list
-                CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -vE '^(\.github/|wiki/|README\.md$|README-EN\.md$)' || echo "")
-
-                if [[ -z "${CHANGED_FILES}" ]]; then
-                  echo "Only .github, wiki or README files changed, skipping build and deploy"
-                  echo "skip=true" >> $GITHUB_OUTPUT
-                else
+                ALL_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }})
+                if echo "${ALL_FILES}" | grep -qx '.github/workflows/deploy.yml'; then
                   echo "skip=false" >> $GITHUB_OUTPUT
+                else
+                  CHANGED_FILES=$(echo "${ALL_FILES}" | grep -vE '^(\.github/|wiki/|README\.md$|README-EN\.md$)' || echo "")
+                  if [[ -z "${CHANGED_FILES}" ]]; then
+                    echo "Only .github, wiki or README files changed, skipping build and deploy"
+                    echo "skip=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "skip=false" >> $GITHUB_OUTPUT
+                  fi
                 fi
               fi
           else
@@ -44,6 +53,8 @@ jobs:
         if: ${{ steps.github_only.outputs.skip != 'true' }}
         id: git
         shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           IS_TAG=false
           if [[ ${GITHUB_REF} == *"/tags/"* ]]; then
@@ -51,6 +62,8 @@ jobs:
           fi
 
           BRANCH_NAME=$(echo ${GITHUB_REF} | sed -e "s/.*\///g")
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          GHCR_IMAGE=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
 
           if [[ ${BRANCH_NAME} == "master" ]]; then
             IMAGE_VERSION="devel"
@@ -66,27 +79,37 @@ jobs:
           fi
 
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          PUSH_DOCKERHUB=false
+          if [[ -n "${DOCKERHUB_USERNAME}" ]]; then
+            PUSH_DOCKERHUB=true
+          fi
 
           echo "image_version=${IMAGE_VERSION}" >> $GITHUB_ENV
           echo "build_platforms=${BUILD_PLATFORMS}" >> $GITHUB_ENV
           echo "build_date=${BUILD_DATE}" >> $GITHUB_ENV
+          echo "push_dockerhub=${PUSH_DOCKERHUB}" >> $GITHUB_ENV
 
-          # Build tags list with conditional :latest tags for tag releases
-          TAGS="${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"$'\n'"ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"
-          
-          if [[ ${IS_TAG} == "true" ]]; then
-            TAGS+=$'\n'"${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-            TAGS+=$'\n'"ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+          TAGS="ghcr.io/${OWNER}/${GHCR_IMAGE}:${IMAGE_VERSION}"
+          if [[ "${PUSH_DOCKERHUB}" == "true" ]]; then
+            TAGS="${OWNER}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"$'\n'"${TAGS}"
           fi
           
+          if [[ ${IS_TAG} == "true" ]]; then
+            TAGS+=$'\n'"ghcr.io/${OWNER}/${GHCR_IMAGE}:latest"
+            if [[ "${PUSH_DOCKERHUB}" == "true" ]]; then
+              TAGS+=$'\n'"${OWNER}/${{ env.IMAGE_NAME }}:latest"
+            fi
+          fi
+
+          echo "push_dockerhub=${PUSH_DOCKERHUB}" >> $GITHUB_OUTPUT
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "$TAGS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "Action branch=${BRANCH_NAME} tag=${IS_TAG} ref=${GITHUB_REF} image_version=${IMAGE_VERSION} build_date=${BUILD_DATE} platforms=${BUILD_PLATFORMS} tags=${TAGS}"
+          echo "Action branch=${BRANCH_NAME} tag=${IS_TAG} ref=${GITHUB_REF} image_version=${IMAGE_VERSION} build_date=${BUILD_DATE} platforms=${BUILD_PLATFORMS} dockerhub=${PUSH_DOCKERHUB} tags=${TAGS}"
 
       - name: Login to DockerHub
-        if: ${{ steps.github_only.outputs.skip != 'true' }}
+        if: ${{ steps.github_only.outputs.skip != 'true' && steps.git.outputs.push_dockerhub == 'true' }}
         uses: docker/login-action@v4.6.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -97,7 +120,7 @@ jobs:
         uses: docker/login-action@v4.6.0
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
@@ -116,6 +139,8 @@ jobs:
         with:
           platforms: ${{ env.build_platforms }}
           push: true
+          provenance: false
+          sbom: false
           build-args: |
             DOCKERIZED_VERSION=${{ env.image_version }}
             BUILD_DATE=${{ env.build_date }}
@@ -133,7 +158,7 @@ jobs:
           fi
 
       - name: Sync README to DockerHub
-        if: ${{ steps.github_only.outputs.skip != 'true' && steps.readme_changed.outputs.changed == 'true' }}
+        if: ${{ steps.github_only.outputs.skip != 'true' && steps.git.outputs.push_dockerhub == 'true' && steps.readme_changed.outputs.changed == 'true' }}
         uses: ms-jpq/sync-dockerhub-readme@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}

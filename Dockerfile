@@ -46,6 +46,11 @@ RUN apk --no-cache add \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
+    for p in /tmp/torrentmonitor/*.patch; do \
+        [ -f "$p" ] || continue; \
+        echo "Applying $(basename "$p")"; \
+        patch -p1 -d /rootfs/data/htdocs < "$p"; \
+    done && \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image

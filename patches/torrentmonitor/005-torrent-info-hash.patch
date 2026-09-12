@@ -1,0 +1,100 @@
+--- a/class/System.class.php
++++ b/class/System.class.php
+@@ -708,6 +708,13 @@
+ 
+         if ($saved)
+         {
++            // Store info-hash from the .torrent itself so torrent.hash is never
++            // left empty/NULL if the torrent-client add path cannot return one
++            // (qBittorrent 5.x pending URL-add, missing added_torrent_ids, etc.).
++            $infoHash = Sys::torrentInfoHash($torrent);
++            if ($infoHash !== '')
++                Database::updateHash($id, $infoHash);
++
+             $useTorrent = Database::getSetting('useTorrent');
+             if ($useTorrent)
+             {
+@@ -797,6 +804,83 @@
+             return FALSE;
+     }
+ 
++    // SHA-1 info-hash of a bencoded .torrent (v1 / hybrid). Empty string on failure.
++    public static function torrentInfoHash($data)
++    {
++        if ( ! is_string($data) || $data === '' || $data[0] !== 'd')
++            return '';
++
++        $pos = 1;
++        $len = strlen($data);
++        while ($pos < $len && $data[$pos] !== 'e')
++        {
++            $keyRaw = self::bencodeRawValue($data, $pos);
++            if ($keyRaw === false)
++                return '';
++            $colon = strpos($keyRaw, ':');
++            $key = ($colon === false) ? '' : substr($keyRaw, $colon + 1);
++            $valRaw = self::bencodeRawValue($data, $pos);
++            if ($valRaw === false)
++                return '';
++            if ($key === 'info')
++                return sha1($valRaw);
++        }
++        return '';
++    }
++
++    // Consume one bencoded value at $pos and return its raw bytes (or false).
++    private static function bencodeRawValue($data, &$pos)
++    {
++        $len = strlen($data);
++        if ($pos >= $len)
++            return false;
++
++        $c = $data[$pos];
++        if ($c === 'i')
++        {
++            $end = strpos($data, 'e', $pos + 1);
++            if ($end === false)
++                return false;
++            $raw = substr($data, $pos, $end - $pos + 1);
++            $pos = $end + 1;
++            return $raw;
++        }
++        if ($c === 'l' || $c === 'd')
++        {
++            $start = $pos;
++            $pos++;
++            while ($pos < $len && $data[$pos] !== 'e')
++            {
++                if ($c === 'd')
++                {
++                    if (self::bencodeRawValue($data, $pos) === false)
++                        return false;
++                }
++                if (self::bencodeRawValue($data, $pos) === false)
++                    return false;
++            }
++            if ($pos >= $len)
++                return false;
++            $pos++;
++            return substr($data, $start, $pos - $start);
++        }
++        if ($c >= '0' && $c <= '9')
++        {
++            $colon = strpos($data, ':', $pos);
++            if ($colon === false)
++                return false;
++            $n = intval(substr($data, $pos, $colon - $pos), 10);
++            if ($n < 0)
++                return false;
++            $rawStart = $pos;
++            $pos = $colon + 1 + $n;
++            if ($pos > $len)
++                return false;
++            return substr($data, $rawStart, $pos - $rawStart);
++        }
++        return false;
++    }
++
+     //удаляем старые torrent-файлы
+     public static function deleteOldTorrents()
+     {

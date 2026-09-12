@@ -1,0 +1,17 @@
+--- a/class/Database.class.php
++++ b/class/Database.class.php
+@@ -877,6 +877,14 @@
+ 
+     public static function updateHash($id, $hash)
+     {
++        // torrent.hash is NOT NULL. PHP 8 PDO throws on NULL binds
++        // (qBittorrent 5.x can return an empty/pending hash after torrents/add).
++        if ($hash === null || $hash === false)
++            return FALSE;
++        $hash = trim((string) $hash);
++        if ($hash === '')
++            return FALSE;
++
+         $stmt = self::newStatement("UPDATE `torrent` SET `hash` = :hash WHERE `id` = :id");
+         $stmt->bindParam(':hash', $hash);
+         $stmt->bindParam(':id', $id);
