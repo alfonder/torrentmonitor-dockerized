@@ -33,7 +33,7 @@ RUN abuild-keygen -an -q && \
     abuild rootpkg
 
 # rootfs builder
-FROM alpine:3.24.1 as rootfs-builder
+FROM alpine:3.24.1 AS rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -46,6 +46,12 @@ RUN apk --no-cache add \
         && \
     unzip /tmp/tm-latest.zip -d /tmp/ && \
     mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
+    if [ -d /tmp/torrentmonitor ]; then \
+        for p in $(find /tmp/torrentmonitor -maxdepth 1 -name '*.patch' | sort); do \
+            echo "Applying $(basename "$p")"; \
+            patch -p1 -d /rootfs/data/htdocs < "$p"; \
+        done; \
+    fi && \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
