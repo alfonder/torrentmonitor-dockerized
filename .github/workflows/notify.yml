@@ -5,6 +5,12 @@ on:
     types: [opened]
   pull_request:
     types: [opened]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'URL to include in the notification (e.g. a PR link)'
+        required: false
+        type: string
 
 jobs:
   notify-on-telegram:
@@ -26,7 +32,7 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           disable_web_page_preview: true
           message: |
-            New ${{ github.event_name }} created
+            New ${{ github.event_name == 'workflow_dispatch' && 'pull request' || github.event_name }} created
 
             See details:
-            ${{ github.event_name == 'pull_request' && github.event.pull_request.html_url || github.event.issue.html_url }}
+            ${{ github.event_name == 'pull_request' && github.event.pull_request.html_url || github.event_name == 'issues' && github.event.issue.html_url || inputs.url }}
