@@ -61,7 +61,7 @@ FROM alpine:3.24.1
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="3.3.4" \
+ENV TM_VERSION="3.3.5" \
     TM_RELEASE_DATE="16.09.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
