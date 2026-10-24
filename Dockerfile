@@ -1,5 +1,5 @@
 # apk builder (build gnu-libiconv 1.15 from source)
-FROM alpine:3.24.1 AS apk-builder
+FROM alpine:3.24.3 AS apk-builder
 
 RUN apk --no-cache add \
         alpine-sdk \
@@ -33,7 +33,7 @@ RUN abuild-keygen -an -q && \
     abuild rootpkg
 
 # rootfs builder
-FROM alpine:3.24.1 AS rootfs-builder
+FROM alpine:3.24.3 AS rootfs-builder
 
 COPY rootfs/ /rootfs/
 COPY patches/ /tmp/
@@ -55,7 +55,7 @@ RUN apk --no-cache add \
     cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
 
 # Main image
-FROM alpine:3.24.1
+FROM alpine:3.24.3
 
 # Build arguments for TorrentMonitor Dockerized version tracking
 ARG DOCKERIZED_VERSION="dev"
