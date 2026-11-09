@@ -13,10 +13,16 @@ updates:
     directory: "/"
     target-branch: "master"
     schedule:
-      interval: "daily"
+      interval: "cron"
+      cronjob: "0 */6 * * *"
+    cooldown:
+      default-days: 1
 
   - package-ecosystem: "docker"
     directory: "/"
     target-branch: "beta"
     schedule:
-      interval: "daily"
+      interval: "cron"
+      cronjob: "0 */6 * * *"
+    cooldown:
+      default-days: 1
