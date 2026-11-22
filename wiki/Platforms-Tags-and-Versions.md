@@ -64,7 +64,26 @@ docker pull ghcr.io/alfonder/torrentmonitor:latest
 - **Базовый образ:** Alpine Linux
 - **Веб-сервер:** Nginx
 - **PHP:** 8.5 (в теге `legacy` — PHP 7)
-- **База данных:** SQLite (хранится в томе `/data/htdocs/db`)
+- **Приложение:** TorrentMonitor 4 из архива релиза
+  [azinchen/TorrentMonitor](https://github.com/azinchen/TorrentMonitor/releases)
+- **Данные:** JSON-файлы в томе `/data/htdocs/db`; базы данных нет
+
+За новыми версиями приложения репозиторий образа следит по странице Releases
+azinchen/TorrentMonitor.
+
+### Сборка образа из исходников
+
+Какой архив TorrentMonitor попадёт в образ, задают аргументы сборки:
+
+| Аргумент | Назначение |
+| --- | --- |
+| `TM_VERSION` | Версия релиза, архив которого скачивается (по умолчанию `4.0.0`). |
+| `TM_SOURCE` | Адрес архива или файл внутри контекста сборки. По умолчанию — архив релиза `TM_VERSION` на GitHub. |
+
+```bash
+docker build -t torrentmonitor .
+docker build -t torrentmonitor --build-arg TM_SOURCE=TorrentMonitor-4.0.0.zip .   # архив лежит рядом с Dockerfile
+```
 
 ---
 
