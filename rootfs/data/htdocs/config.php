@@ -1,8 +1,5 @@
 <?php
-include_once dirname(__FILE__).'/class/Config.class.php';
-Config::extended('/data/htdocs/db/config.xml');
-
-Config::write('db.type', 'sqlite');
-Config::write('db.basename', '/data/htdocs/db/tm.sqlite');
-Config::write('encryption.key', '{ENCRYPTION_KEY}');
-?>
+// Settings of the Docker image: data and torrent files live in the mounted volumes.
+// The data directory keeps its old path, so volumes of earlier versions keep working.
+Config::write('data.dir', '/data/htdocs/db');
+Config::write('torrents.dir', '/data/htdocs/torrents');

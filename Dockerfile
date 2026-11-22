@@ -35,18 +35,19 @@ RUN abuild-keygen -an -q && \
 # rootfs builder
 FROM alpine:3.24.1 as rootfs-builder
 
-COPY rootfs/ /rootfs/
-COPY patches/ /tmp/
-ADD https://github.com/ElizarovEugene/TorrentMonitor/archive/refs/heads/master.zip /tmp/tm-latest.zip
+# TorrentMonitor release to install. TM_SOURCE may also be a file inside the build context
+# (for example a locally built archive): --build-arg TM_SOURCE=TorrentMonitor-4.0.0.zip
+ARG TM_VERSION="4.0.0"
+ARG TM_SOURCE="https://github.com/azinchen/TorrentMonitor/releases/download/v${TM_VERSION}/TorrentMonitor-${TM_VERSION}.zip"
 
-RUN apk --no-cache add \
-        unzip \
-        sqlite \
-        patch \
-        && \
-    unzip /tmp/tm-latest.zip -d /tmp/ && \
-    mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
-    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
+COPY rootfs/ /rootfs/
+ADD ${TM_SOURCE} /tmp/tm.zip
+
+RUN apk --no-cache add unzip && \
+    unzip -q /tmp/tm.zip -d /tmp/tm && \
+    cp -a /tmp/tm/TorrentMonitor-*/. /rootfs/data/htdocs/ && \
+    test -f /rootfs/data/htdocs/public/index.php && \
+    test -f /rootfs/data/htdocs/tools/convert-db.php
 
 # Main image
 FROM alpine:3.24.1
@@ -55,8 +56,8 @@ FROM alpine:3.24.1
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="3.0" \
-    TM_RELEASE_DATE="10.07.2026" \
+ENV TM_VERSION="4.0.0" \
+    TM_RELEASE_DATE="22.11.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
@@ -73,8 +74,8 @@ LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.co
     org.opencontainers.image.created="${BUILD_DATE}" \
     torrentmonitor.app.version="${TM_VERSION}" \
     torrentmonitor.app.release-date="${TM_RELEASE_DATE}" \
-    torrentmonitor.app.url="https://tormon.ru" \
-    torrentmonitor.app.source="https://github.com/ElizarovEugene/TorrentMonitor"
+    torrentmonitor.app.url="https://github.com/azinchen/TorrentMonitor" \
+    torrentmonitor.app.source="https://github.com/azinchen/TorrentMonitor"
 
 COPY --from=rootfs-builder /rootfs/ /
 COPY --from=apk-builder /home/builduser/packages /tmp/packages
@@ -83,7 +84,6 @@ COPY --from=apk-builder /tmp/builder.rsa.pub /etc/apk/keys/
 RUN apk --no-cache add \
         nginx \
         wget \
-        sqlite \
         shadow \
         php85 \
         php85-common \

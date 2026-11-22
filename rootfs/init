@@ -8,10 +8,6 @@ crlog () {
 
 crlog "[${DATE}] Starting container: TorrentMonitor ${TM_VERSION}"
 
-# Populate database if not exists
-test -f /data/htdocs/db/tm.sqlite || cp /data/htdocs/db_schema/tm.sqlite /data/htdocs/db/tm.sqlite
-test -f /data/htdocs/db/config.xml || cp /data/htdocs/config.xml /data/htdocs/db/config.xml
-
 # Configure system
 # Set PHP timezone
 sed -i "/date\\.timezone/d" /etc/php85/php.ini
@@ -27,18 +23,28 @@ echo "memory_limit = ${PHP_MEMORY_LIMIT}" >> /etc/php85/cli/php.ini
 sed -i "/memory_limit/d" /etc/php85/php-fpm.conf
 echo "php_admin_value[memory_limit] = ${PHP_MEMORY_LIMIT}" >> /etc/php85/php-fpm.conf
 
-# Handle encryption key
-if [ -z "$ENCRYPTION_KEY" ]; then
-  if [ -f "/data/htdocs/db/db_crypt.key" ]; then
-    ENCRYPTION_KEY=$(cat /data/htdocs/db/db_crypt.key)
+# Compatibility links (the converter below needs the php command)
+test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm85 /usr/bin/php-fpm
+test -f /usr/bin/php || ln -s /usr/bin/php85 /usr/bin/php
+
+# Data of TorrentMonitor 3.x (SQLite database in the db volume) is converted once to the JSON
+# files of version 4. The database file is left in place and is not used afterwards.
+DATA_DIR=/data/htdocs/db
+if [ ! -f "${DATA_DIR}/config.json" ] && [ -s "${DATA_DIR}/tm.sqlite" ]; then
+  crlog "[${DATE}] Converting the TorrentMonitor 3.x database to the new data format..."
+  set -- --type=sqlite "--db=${DATA_DIR}/tm.sqlite" "--data=${DATA_DIR}"
+  if [ -n "$ENCRYPTION_KEY" ]; then
+    set -- "$@" "--key=${ENCRYPTION_KEY}"
+  elif [ -f "${DATA_DIR}/db_crypt.key" ]; then
+    set -- "$@" "--key-file=${DATA_DIR}/db_crypt.key"
+  fi
+  [ -f "${DATA_DIR}/config.xml" ] && set -- "$@" "--config-xml=${DATA_DIR}/config.xml"
+  if php /data/htdocs/tools/convert-db.php "$@" >> /proc/1/fd/1 2>&1; then
+    crlog "[${DATE}] Conversion finished."
   else
-    ENCRYPTION_KEY=$(php -r "echo bin2hex(random_bytes(32));")
-    echo "$ENCRYPTION_KEY" > /data/htdocs/db/db_crypt.key
+    crlog "[${DATE}] Conversion FAILED: TorrentMonitor will start as a new installation. The database file is untouched."
   fi
 fi
-# Replace encryption key placeholder in config.php
-ESCAPED_KEY=$(printf "%s" "$ENCRYPTION_KEY" | sed 's/[\/&]/\\&/g')
-sed -i "s/{ENCRYPTION_KEY}/${ESCAPED_KEY}/g" /data/htdocs/config.php
 
 # Set cron timeout for engine.php
 echo "${CRON_TIMEOUT} ${CRON_COMMAND}" > /etc/crontabs/nginx
@@ -66,10 +72,6 @@ chown -R nginx:nginx /var/log/nginx
 
 # Write temp files by nginx
 chmod 777 /tmp
-
-# Compatibility links
-test -f /usr/bin/php-fpm || ln -s /usr/sbin/php-fpm85 /usr/bin/php-fpm
-test -f /usr/bin/php || ln -s /usr/bin/php85 /usr/bin/php
 
 # Start apps
 php-fpm

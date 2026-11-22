@@ -16,12 +16,14 @@ jobs:
         id: downloadtorrentmonitor
         shell: bash
         run: |
-          wget -q https://github.com/ElizarovEugene/TorrentMonitor/raw/refs/heads/master/version.txt -qO /tmp/version.txt
-          wget -q https://github.com/ElizarovEugene/TorrentMonitor/raw/refs/heads/master/changelog.txt -qO /tmp/changelog.txt
+          # the latest published release of TorrentMonitor
+          wget -q https://api.github.com/repos/azinchen/TorrentMonitor/releases/latest -O /tmp/release.json
 
-          TM_VERSION=$(jq -r '.system' /tmp/version.txt)
-          TM_DATE=$(head -n 1 /tmp/changelog.txt | awk '{print $1;}')
+          TM_VERSION=$(jq -r '.tag_name // empty' /tmp/release.json | sed 's/^[vV]//')
+          TM_DATE=$(date -d "$(jq -r '.published_at' /tmp/release.json)" +%d.%m.%Y)
+          [ -n "${TM_VERSION}" ] || { echo "no release found"; exit 1; }
 
+          sed -i "s/\(ARG TM_VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" Dockerfile
           sed -i "s/\(ENV TM_VERSION=*\)[^ ]*/\1\"${TM_VERSION}\"/" Dockerfile
           sed -i "s/\(    TM_RELEASE_DATE=*\)[^ ]*/\1\"${TM_DATE}\"/" Dockerfile
 
