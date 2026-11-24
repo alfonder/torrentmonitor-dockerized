@@ -98,7 +98,6 @@ services:
     volumes:
       - ${DATA_DIR}/torrents:/data/htdocs/torrents
       - ${DATA_DIR}/db:/data/htdocs/db
-      - ${DATA_DIR}/logs:/data/htdocs/logs
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PHP_TIMEZONE=${TIMEZONE}
@@ -109,9 +108,6 @@ services:
 `docker compose up -d` — Compose пересоздаст контейнер с новыми параметрами.
 
 > 📄 Это та же схема, что лежит в репозитории в файлах `docker-compose.yml` и `.env`.
-
-> Строка с папкой `logs` осталась от прежних версий. TorrentMonitor 4 в `/data/htdocs/logs` ничего
-> не пишет, поэтому её можно убрать; если оставить — ничего не сломается.
 
 ---
 

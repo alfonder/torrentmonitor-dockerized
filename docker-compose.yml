@@ -8,7 +8,6 @@ services:
     volumes:
       - ${DATA_DIR}/torrents:/data/htdocs/torrents
       - ${DATA_DIR}/db:/data/htdocs/db
-      - ${DATA_DIR}/logs:/data/htdocs/logs
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PHP_TIMEZONE=${TIMEZONE}
