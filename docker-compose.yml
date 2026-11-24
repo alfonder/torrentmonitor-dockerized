@@ -12,3 +12,9 @@ services:
     environment:
       - PHP_TIMEZONE=${TIMEZONE}
       - CRON_TIMEOUT=${SCHEDULE}
+    # every check is written to the container log: keep it from growing without limit
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

@@ -139,8 +139,32 @@ docker container logs -f torrentmonitor     # следить в реальном
 docker container logs --tail 100 torrentmonitor   # последние 100 строк
 ```
 
-Журнал последней проверки трекеров показан в веб-интерфейсе в разделе «Состояние» и лежит в файле
-`engine.log` в томе `db`. Папка `logs` (`/data/htdocs/logs`) больше не используется: TorrentMonitor 4
+В лог контейнера попадают:
+
+- запуск контейнера и перенос данных версии 3.x;
+- каждая проверка трекеров — по расписанию, из веб-интерфейса («Проверить сейчас») и через API.
+  Проверка начинается со сведений о версиях (TorrentMonitor, PHP, torrent-клиент, решатель
+  Cloudflare) и заканчивается итогом: сколько тем проверено, обновлено и с ошибками;
+- ошибки веб-сервера и PHP.
+
+Docker по умолчанию хранит лог без ограничения размера. Ограничьте его в `docker-compose.yml`
+(так сделано в примере из репозитория):
+
+```yaml
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+```
+
+Для `docker run` — параметры `--log-opt max-size=10m --log-opt max-file=3`.
+
+В веб-интерфейсе, в разделе «Состояние», показаны журнал последней проверки и журнал событий
+(проверки, обновления, изменения настроек). Это файлы `engine.log` и `journal.log` в томе `db`.
+Подробно — в [вики TorrentMonitor](https://github.com/azinchen/TorrentMonitor/wiki/Troubleshooting#журналы).
+
+Папка `logs` (`/data/htdocs/logs`) больше не используется: TorrentMonitor 4
 в неё ничего не пишет.
 
 ---

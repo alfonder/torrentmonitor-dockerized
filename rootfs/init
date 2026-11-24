@@ -73,6 +73,14 @@ chown -R nginx:nginx /var/log/nginx
 # Write temp files by nginx
 chmod 777 /tmp
 
+# Check runs started from the web interface or the API run as the nginx user, and only root may
+# write to the container's output. They write to this file instead (see log.output in config.php),
+# and root passes it on, so that these runs show in "docker logs" like the scheduled ones.
+RUN_OUTPUT=/var/log/torrentmonitor-run.log
+: > "$RUN_OUTPUT"
+chown nginx:nginx "$RUN_OUTPUT"
+tail -F -n 0 "$RUN_OUTPUT" >> /proc/1/fd/1 2>/dev/null &
+
 # Start apps
 php-fpm
 nginx -g 'daemon off;' &

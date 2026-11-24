@@ -102,6 +102,11 @@ services:
     environment:
       - PHP_TIMEZONE=${TIMEZONE}
       - CRON_TIMEOUT=${SCHEDULE}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 Теперь, чтобы поменять порт или расписание, достаточно отредактировать `.env` и выполнить
