@@ -3,7 +3,7 @@ FROM alpine:3.24.1 AS rootfs-builder
 
 # TorrentMonitor release to install. TM_SOURCE may also be a file inside the build context
 # (for example a locally built archive): --build-arg TM_SOURCE=TorrentMonitor-4.0.0.zip
-ARG TM_VERSION="4.0.0-beta7"
+ARG TM_VERSION="4.0.0-beta8"
 ARG TM_SOURCE="https://github.com/azinchen/TorrentMonitor/releases/download/v${TM_VERSION}/TorrentMonitor-${TM_VERSION}.zip"
 
 COPY rootfs/ /rootfs/
@@ -22,7 +22,7 @@ FROM alpine:3.24.1
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="4.0.0-beta7" \
+ENV TM_VERSION="4.0.0-beta8" \
     TM_RELEASE_DATE="23.11.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
