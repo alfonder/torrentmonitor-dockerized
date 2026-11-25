@@ -93,7 +93,7 @@ docker compose up -d
 
 ### 3. TorrentMonitor → Transmission
 
-В **Настройки → Torrent-клиент** выберите Transmission:
+В **Настройки → Torrent-клиенты** добавьте клиент вида Transmission:
 
 ```
 адрес: http://transmission:9091
