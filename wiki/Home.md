@@ -1,8 +1,13 @@
 # TorrentMonitor в Docker — Вики
 
 Добро пожаловать в документацию проекта **TorrentMonitor Dockerized** — контейнера Docker для
-[TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor), веб-приложения для
+[TorrentMonitor](https://github.com/azinchen/TorrentMonitor), веб-приложения для
 отслеживания и автоматической загрузки торрентов с различных трекеров.
+
+В образе — **TorrentMonitor 4**. Базы данных в нём нет, данные хранятся в JSON-файлах в томе
+`/data/htdocs/db`. Обновляетесь с версии 3.x — прочтите
+**[Переход с версии 3.x](Updating-and-Maintenance#переход-с-версии-3x-на-torrentmonitor-40)**:
+данные переносятся автоматически при первом запуске.
 
 Этот раздел вики содержит подробные пошаговые инструкции с примерами: от установки Docker
 до тонкой настройки контейнера и связки с TOR + Transmission.
@@ -12,7 +17,7 @@
 
 > 📖 Здесь описан только **Docker-контейнер**. Документация самого приложения TorrentMonitor —
 > веб-интерфейс, настройки, поддерживаемые трекеры, торрент-клиенты, уведомления — находится в
-> **[Вики TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor/wiki)**.
+> **[Вики TorrentMonitor](https://github.com/azinchen/TorrentMonitor/wiki)**.
 
 ---
 
@@ -37,14 +42,14 @@
 
 ### Конфигурация
 - **[Переменные окружения](Environment-Variables)** — полный справочник всех переменных.
-- **[Тома и постоянные данные](Volumes-and-Data)** — как не потерять базу и торренты.
-- **[Настройка и использование](Configuration-and-Usage)** — первый вход, подключение клиентов из контейнера, расписание.
+- **[Тома и постоянные данные](Volumes-and-Data)** — как не потерять данные и торренты.
+- **[Настройка и использование](Configuration-and-Usage)** — первый вход, подключение клиентов из контейнера, прокси и Cloudflare, расписание.
 
 ### Сценарии использования
 - **[TorrentMonitor + TOR + Transmission](TOR-and-Transmission)** — обход блокировок трекеров.
 
 ### Эксплуатация
-- **[Обновление и обслуживание](Updating-and-Maintenance)** — обновление образа, бэкапы, логи.
+- **[Обновление и обслуживание](Updating-and-Maintenance)** — обновление образа, переход с версии 3.x, бэкапы, логи.
 - **[Решение проблем](Troubleshooting)** — частые ошибки и их решения.
 - **[Платформы, теги и версии](Platforms-Tags-and-Versions)** — поддерживаемые архитектуры и теги образов.
 
@@ -63,7 +68,7 @@ TorrentMonitor — это веб-приложение на PHP, которое:
 Контейнер собран на базе **Alpine Linux** с **Nginx** и **PHP 8.5**.
 
 Список поддерживаемых трекеров и подробности о возможностях приложения — в
-**[Вики TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor/wiki)**.
+**[Вики TorrentMonitor](https://github.com/azinchen/TorrentMonitor/wiki)**.
 
 ---
 

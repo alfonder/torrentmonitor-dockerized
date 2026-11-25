@@ -7,16 +7,19 @@
 
 [[English version]](https://github.com/alfonder/torrentmonitor-dockerized/blob/master/README-EN.md)
 
-Контейнер Docker для [TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor) — веб-приложения
+Контейнер Docker для [TorrentMonitor](https://github.com/azinchen/TorrentMonitor) — веб-приложения
 для отслеживания и автоматической загрузки торрентов с различных трекеров. Собран на Alpine Linux с
 Nginx и PHP 8.5.
+
+В образе — TorrentMonitor 4. Базы данных в нём нет: темы, учётные данные трекеров и настройки
+хранятся в JSON-файлах в томе `/data/htdocs/db`. Тома и файлы compose прежних версий менять не нужно.
 
 > 📖 **Подробная документация по контейнеру — в [Вики проекта](https://github.com/alfonder/torrentmonitor-dockerized/wiki):**
 > установка Docker, запуск через `docker run` и Docker Compose, переменные окружения,
 > связка с TOR + Transmission, решение проблем и многое другое.
 >
 > 📚 Документация самого приложения (веб-интерфейс, настройки, поддерживаемые трекеры,
-> торрент-клиенты) — в **[Вики TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor/wiki)**.
+> торрент-клиенты) — в **[Вики TorrentMonitor](https://github.com/azinchen/TorrentMonitor/wiki)**.
 
 ---
 
@@ -39,7 +42,12 @@ Nginx и PHP 8.5.
 
 3. **Откройте веб-интерфейс:** [http://localhost:8080](http://localhost:8080)
 
-Данные хранятся в томах и сохраняются при пересоздании контейнера.
+   Новая установка показывает форму настройки: пароль для входа (или работа без пароля), адрес
+   TorrentMonitor и, по желанию, торрент-клиент. Пароля по умолчанию нет. Заполните форму сразу:
+   пока она не заполнена, это может сделать любой, кто откроет этот адрес.
+
+Данные хранятся в томах и сохраняются при пересоздании контейнера. В томе `db` лежат и пароли
+трекеров и торрент-клиента — в открытом виде, в файле `config.json`. Не давайте к нему доступ посторонним.
 
 ### Docker Compose
 
@@ -66,6 +74,18 @@ docker compose up -d
 
 ---
 
+## Обновление с версии 3.x
+
+Сделайте копию папки `db`, обновите образ и пересоздайте контейнер с теми же томами. При первом
+запуске контейнер сам переносит данные из прежней базы (`tm.sqlite`) в новые файлы и пишет об этом
+в лог (`docker container logs torrentmonitor`). Темы, учётные данные трекеров, настройки и пароль
+веб-интерфейса сохраняются. Файлы `tm.sqlite`, `config.xml` и `db_crypt.key` остаются на месте как
+копия и больше не используются.
+
+Подробнее — в [Вики: Обновление и обслуживание](https://github.com/alfonder/torrentmonitor-dockerized/wiki/Updating-and-Maintenance#переход-с-версии-3x-на-torrentmonitor-40).
+
+---
+
 ## Основные переменные окружения
 
 | Переменная | По умолчанию | Назначение |
@@ -75,6 +95,7 @@ docker compose up -d
 | `PHP_MEMORY_LIMIT` | `512M` | Лимит памяти PHP |
 | `NGINX_PORT` | `80` | Внутренний порт Nginx |
 | `PUID` / `PGID` | — | UID/GID для прав на файлы |
+| `ENCRYPTION_KEY` | — | Ключ шифрования версии 3.x; нужен только для переноса данных при первом запуске 4.0 |
 
 Полный справочник — в [Вики: Переменные окружения](https://github.com/alfonder/torrentmonitor-dockerized/wiki/Environment-Variables).
 

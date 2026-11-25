@@ -1,58 +1,19 @@
-# apk builder (build gnu-libiconv 1.15 from source)
-FROM alpine:3.24.4 AS apk-builder
-
-RUN apk --no-cache add \
-        alpine-sdk \
-        sudo \
-        && \
-    adduser -D builduser && \
-    addgroup builduser abuild && \
-    addgroup builduser wheel && \
-    echo '%wheel ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/wheel && \
-    chmod 0400 /etc/sudoers.d/wheel
-
-COPY patches/libiconv-1.15-loop_wchar.patch /tmp/
-COPY patches/gnu-libiconv-APKBUILD /tmp/
-
-USER builduser
-WORKDIR /home/builduser
-
-RUN abuild-keygen -an -q && \
-    mv /home/builduser/.abuild/*.rsa     /home/builduser/.abuild/builder.rsa && \
-    mv /home/builduser/.abuild/*.rsa.pub /home/builduser/.abuild/builder.rsa.pub && \
-    sudo cp /home/builduser/.abuild/builder.rsa.pub /etc/apk/keys/builder.rsa.pub && \
-    echo 'PACKAGER_PRIVKEY="/home/builduser/.abuild/builder.rsa"' > /home/builduser/.abuild/abuild.conf && \
-    cp /home/builduser/.abuild/builder.rsa.pub /tmp/builder.rsa.pub && \
-    cp /tmp/gnu-libiconv-APKBUILD APKBUILD && \
-    abuild checksum && \
-    abuild deps && \
-    abuild fetch && \
-    abuild unpack && \
-    patch -p1 -d src/libiconv-1.15 < /tmp/libiconv-1.15-loop_wchar.patch && \
-    abuild build && \
-    abuild rootpkg
-
 # rootfs builder
 FROM alpine:3.24.4 AS rootfs-builder
 
-COPY rootfs/ /rootfs/
-COPY patches/ /tmp/
-ADD https://github.com/ElizarovEugene/TorrentMonitor/archive/refs/heads/master.zip /tmp/tm-latest.zip
+# TorrentMonitor release to install. TM_SOURCE may also be a file inside the build context
+# (for example a locally built archive): --build-arg TM_SOURCE=TorrentMonitor-4.0.0.zip
+ARG TM_VERSION="4.0.0-rc.2"
+ARG TM_SOURCE="https://github.com/azinchen/TorrentMonitor/releases/download/v${TM_VERSION}/TorrentMonitor-${TM_VERSION}.zip"
 
-RUN apk --no-cache add \
-        unzip \
-        sqlite \
-        patch \
-        && \
-    unzip /tmp/tm-latest.zip -d /tmp/ && \
-    mv /tmp/TorrentMonitor-master/* /rootfs/data/htdocs && \
-    if [ -d /tmp/torrentmonitor ]; then \
-        for p in $(find /tmp/torrentmonitor -maxdepth 1 -name '*.patch' | sort); do \
-            echo "Applying $(basename "$p")"; \
-            patch -p1 -d /rootfs/data/htdocs < "$p"; \
-        done; \
-    fi && \
-    cat /rootfs/data/htdocs/db_schema/sqlite.sql | sqlite3 /rootfs/data/htdocs/db_schema/tm.sqlite
+COPY rootfs/ /rootfs/
+ADD ${TM_SOURCE} /tmp/tm.zip
+
+RUN apk --no-cache add unzip && \
+    unzip -q /tmp/tm.zip -d /tmp/tm && \
+    cp -a /tmp/tm/TorrentMonitor-*/. /rootfs/data/htdocs/ && \
+    test -f /rootfs/data/htdocs/public/index.php && \
+    test -f /rootfs/data/htdocs/tools/convert-db.php
 
 # Main image
 FROM alpine:3.24.4
@@ -61,14 +22,13 @@ FROM alpine:3.24.4
 ARG DOCKERIZED_VERSION="dev"
 ARG BUILD_DATE="unknown"
 
-ENV TM_VERSION="3.3.6" \
-    TM_RELEASE_DATE="17.09.2026" \
+ENV TM_VERSION="4.0.0-rc.2" \
+    TM_RELEASE_DATE="23.11.2026" \
     CRON_TIMEOUT="0 * * * *" \
     CRON_COMMAND="php -q /data/htdocs/engine.php 2>&1" \
     PHP_TIMEZONE="UTC" \
     PHP_MEMORY_LIMIT="512M" \
-    NGINX_PORT="80" \
-    LD_PRELOAD="/usr/lib/preloadable_libiconv.so"
+    NGINX_PORT="80"
 
 LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.com>" \
     org.opencontainers.image.title="TorrentMonitor Dockerized" \
@@ -79,17 +39,14 @@ LABEL org.opencontainers.image.authors="Alexander Fomichev <fomichev.ru@gmail.co
     org.opencontainers.image.created="${BUILD_DATE}" \
     torrentmonitor.app.version="${TM_VERSION}" \
     torrentmonitor.app.release-date="${TM_RELEASE_DATE}" \
-    torrentmonitor.app.url="https://tormon.ru" \
-    torrentmonitor.app.source="https://github.com/ElizarovEugene/TorrentMonitor"
+    torrentmonitor.app.url="https://github.com/azinchen/TorrentMonitor" \
+    torrentmonitor.app.source="https://github.com/azinchen/TorrentMonitor"
 
 COPY --from=rootfs-builder /rootfs/ /
-COPY --from=apk-builder /home/builduser/packages /tmp/packages
-COPY --from=apk-builder /tmp/builder.rsa.pub /etc/apk/keys/
 
 RUN apk --no-cache add \
         nginx \
         wget \
-        sqlite \
         shadow \
         php85 \
         php85-common \
@@ -100,14 +57,12 @@ RUN apk --no-cache add \
         php85-xml \
         php85-simplexml \
         php85-session \
-        php85-iconv \
         php85-mbstring \
         php85-ctype \
         php85-zip \
         php85-dom \
         php85-openssl \
         && \
-    apk --no-cache add /tmp/packages/home/*/gnu-libiconv-1.15-r*.apk && \
     rm -rf /tmp/* && \
     rm -rf /var/cache/apk/*
 

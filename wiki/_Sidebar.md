@@ -23,4 +23,4 @@
 - [Платформы, теги, версии](Platforms-Tags-and-Versions)
 
 **Приложение**
-- [Вики TorrentMonitor](https://github.com/ElizarovEugene/TorrentMonitor/wiki)
+- [Вики TorrentMonitor](https://github.com/azinchen/TorrentMonitor/wiki)

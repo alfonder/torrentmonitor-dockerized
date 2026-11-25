@@ -96,7 +96,7 @@ Docker есть **не на всех** NAS. Как правило, его под
 
 | Папка в контейнере | Назначение |
 | --- | --- |
-| `/data/htdocs/db` | база данных и настройки (обязательно сохранять!) |
+| `/data/htdocs/db` | данные приложения и настройки (обязательно сохранять!) |
 | `/data/htdocs/torrents` | скачанные `.torrent`-файлы |
 
 Например, создайте на NAS папки `docker/torrentmonitor/db` и `docker/torrentmonitor/torrents` и
@@ -156,8 +156,9 @@ Download Station умеет **автоматически забирать `.torr
 TorrentMonitor скачивает `.torrent`, кладёт его в папку, а Download Station автоматически подхватывает
 файл и начинает загрузку.
 
-> ℹ️ У Download Station нет такого RPC-API, как у Transmission/qBittorrent, поэтому связка с ним идёт
-> именно через watch-папку, а не через настройку «торрент-клиента» в самом TorrentMonitor.
+> ℹ️ Synology Download Station можно подключить и как торрент-клиент в настройках TorrentMonitor.
+> В этом случае Download Station скачивает `.torrent`-файл по ссылке, поэтому «Адрес TorrentMonitor»
+> (**Настройки → Общие**) должен открываться с NAS. При связке через watch-папку этого не требуется.
 
 ### Вариант B. Свой клиент в Docker (Transmission, qBittorrent)
 

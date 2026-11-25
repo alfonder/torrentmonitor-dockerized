@@ -3,3 +3,5 @@ windows/data
 *.swp
 env
 .dccache
+TorrentMonitor-*.zip
+.claude/

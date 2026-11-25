@@ -98,11 +98,15 @@ services:
     volumes:
       - ${DATA_DIR}/torrents:/data/htdocs/torrents
       - ${DATA_DIR}/db:/data/htdocs/db
-      - ${DATA_DIR}/logs:/data/htdocs/logs
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PHP_TIMEZONE=${TIMEZONE}
       - CRON_TIMEOUT=${SCHEDULE}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 ```
 
 Теперь, чтобы поменять порт или расписание, достаточно отредактировать `.env` и выполнить
