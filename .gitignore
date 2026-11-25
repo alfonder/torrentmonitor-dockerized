@@ -4,3 +4,4 @@ windows/data
 env
 .dccache
 TorrentMonitor-*.zip
+.claude/
