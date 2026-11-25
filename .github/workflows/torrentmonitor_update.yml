@@ -8,6 +8,10 @@ jobs:
   update_torrentmonitor:
     name: Check/Update TorrentMonitor version
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -54,6 +58,6 @@ jobs:
 
       - name: Trigger notify workflow for created PR
         if: ${{ steps.create_pr.outputs.pull-request-number }}
-        run: gh workflow run notify.yml
+        run: gh workflow run notify.yml -f url="${{ steps.create_pr.outputs.pull-request-url }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

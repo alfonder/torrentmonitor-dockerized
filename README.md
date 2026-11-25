@@ -5,7 +5,7 @@
 
 # TorrentMonitor в Docker
 
-[[English version]](./README-EN.md)
+[[English version]](https://github.com/alfonder/torrentmonitor-dockerized/blob/master/README-EN.md)
 
 Контейнер Docker для [TorrentMonitor](https://github.com/azinchen/TorrentMonitor) — веб-приложения
 для отслеживания и автоматической загрузки торрентов с различных трекеров. Собран на Alpine Linux с

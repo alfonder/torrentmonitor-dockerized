@@ -3,6 +3,10 @@ name: Build and Deploy image
 on:
   push:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   PLATFORMS: "linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/riscv64"
   IMAGE_NAME: "torrentmonitor"
@@ -24,17 +28,18 @@ jobs:
           if [[ "${GITHUB_REF}" == "refs/heads/"* ]]; then
             # For push events on branches, check changed files
             if [[ -z "${{ github.event.before }}" ]]; then
-              echo "skip=false" >> $GITHUB_OUTPUT
-            else
-              CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -v '^\.github/' || echo "")
-              
-              if [[ -z "${CHANGED_FILES}" ]]; then
-                echo "Only .github files changed, skipping build and deploy"
-                echo "skip=true" >> $GITHUB_OUTPUT
-              else
                 echo "skip=false" >> $GITHUB_OUTPUT
+              else
+                # Exclude .github/, wiki/, and README files from the changed files list
+                CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | grep -vE '^(\.github/|wiki/|README\.md$|README-EN\.md$)' || echo "")
+
+                if [[ -z "${CHANGED_FILES}" ]]; then
+                  echo "Only .github, wiki or README files changed, skipping build and deploy"
+                  echo "skip=true" >> $GITHUB_OUTPUT
+                else
+                  echo "skip=false" >> $GITHUB_OUTPUT
+                fi
               fi
-            fi
           else
             echo "skip=false" >> $GITHUB_OUTPUT
           fi
@@ -43,6 +48,8 @@ jobs:
         if: ${{ steps.github_only.outputs.skip != 'true' }}
         id: git
         shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           IS_TAG=false
           if [[ ${GITHUB_REF} == *"/tags/"* ]]; then
@@ -65,35 +72,45 @@ jobs:
           fi
 
           BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          PUSH_DOCKERHUB=false
+          if [[ -n "${DOCKERHUB_USERNAME}" ]]; then
+            PUSH_DOCKERHUB=true
+          fi
 
           echo "image_version=${IMAGE_VERSION}" >> $GITHUB_ENV
           echo "build_platforms=${BUILD_PLATFORMS}" >> $GITHUB_ENV
           echo "build_date=${BUILD_DATE}" >> $GITHUB_ENV
 
           # Build tags list with conditional :latest tags for tag releases
-          TAGS="${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"$'\n'"ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"
-          
-          if [[ ${IS_TAG} == "true" ]]; then
-            TAGS+=$'\n'"${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
-            TAGS+=$'\n'"ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+          TAGS="ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"
+          if [[ "${PUSH_DOCKERHUB}" == "true" ]]; then
+            TAGS="${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${IMAGE_VERSION}"$'\n'"${TAGS}"
           fi
-          
+
+          if false && [[ ${IS_TAG} == "true" ]]; then
+            TAGS+=$'\n'"ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+            if [[ "${PUSH_DOCKERHUB}" == "true" ]]; then
+              TAGS+=$'\n'"${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+            fi
+          fi
+
+          echo "push_dockerhub=${PUSH_DOCKERHUB}" >> $GITHUB_OUTPUT
           echo "tags<<EOF" >> $GITHUB_OUTPUT
           echo "$TAGS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "Action branch=${BRANCH_NAME} tag=${IS_TAG} ref=${GITHUB_REF} image_version=${IMAGE_VERSION} build_date=${BUILD_DATE} platforms=${BUILD_PLATFORMS} tags=${TAGS}"
+          echo "Action branch=${BRANCH_NAME} tag=${IS_TAG} ref=${GITHUB_REF} image_version=${IMAGE_VERSION} build_date=${BUILD_DATE} platforms=${BUILD_PLATFORMS} dockerhub=${PUSH_DOCKERHUB} tags=${TAGS}"
 
       - name: Login to DockerHub
-        if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/login-action@v4.4.0
+        if: ${{ steps.github_only.outputs.skip != 'true' && steps.git.outputs.push_dockerhub == 'true' }}
+        uses: docker/login-action@v4.8.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/login-action@v4.4.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -101,17 +118,17 @@ jobs:
 
       - name: Set up QEMU
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/setup-qemu-action@v4.2.0
+        uses: docker/setup-qemu-action@v4.4.0
         with:
           platforms: ${{ env.build_platforms }}
 
       - name: Set up Docker Buildx
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/setup-buildx-action@v4.2.0
+        uses: docker/setup-buildx-action@v4.4.1
 
       - name: Build and push ${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.image_version }}
         if: ${{ steps.github_only.outputs.skip != 'true' }}
-        uses: docker/build-push-action@v7.3.0
+        uses: docker/build-push-action@v7.4.0
         with:
           platforms: ${{ env.build_platforms }}
           push: true
@@ -132,7 +149,7 @@ jobs:
           fi
 
       - name: Sync README to DockerHub
-        if: ${{ steps.github_only.outputs.skip != 'true' && steps.readme_changed.outputs.changed == 'true' }}
+        if: ${{ steps.github_only.outputs.skip != 'true' && steps.git.outputs.push_dockerhub == 'true' && steps.readme_changed.outputs.changed == 'true' }}
         uses: ms-jpq/sync-dockerhub-readme@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -149,7 +166,7 @@ jobs:
           echo "Telegram SECRETS not defined, skip Telegram notification"
 
       - name: Notify on Telegram
-        uses: appleboy/telegram-action@v1.0.1
+        uses: appleboy/telegram-action@v1.1.2
         env:
           telegram_to: ${{ secrets.TELEGRAM_TO }}
         if: ${{ steps.github_only.outputs.skip != 'true' && env.telegram_to != '' }}

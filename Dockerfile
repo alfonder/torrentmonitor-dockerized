@@ -1,5 +1,5 @@
 # rootfs builder
-FROM alpine:3.24.1 AS rootfs-builder
+FROM alpine:3.24.4 AS rootfs-builder
 
 # TorrentMonitor release to install. TM_SOURCE may also be a file inside the build context
 # (for example a locally built archive): --build-arg TM_SOURCE=TorrentMonitor-4.0.0.zip
@@ -16,7 +16,7 @@ RUN apk --no-cache add unzip && \
     test -f /rootfs/data/htdocs/tools/convert-db.php
 
 # Main image
-FROM alpine:3.24.1
+FROM alpine:3.24.4
 
 # Build arguments for TorrentMonitor Dockerized version tracking
 ARG DOCKERIZED_VERSION="dev"

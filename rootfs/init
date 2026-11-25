@@ -66,12 +66,15 @@ sed -i "s/listen[[:space:]]*[0-9][0-9]*;/listen ${NGINX_PORT};/" /etc/nginx/conf
 [ "q${PUID}" == "q" ] || usermod -o -u "$PUID" nginx
 [ "q${PGID}" == "q" ] || groupmod -o -g "$PGID" nginx
 
-# Set owner for app directory
+# Set owner/permissions for app directory
 chown -R nginx:nginx /data/htdocs
-chown -R nginx:nginx /var/log/nginx
+# The data folder is left out: TorrentMonitor 4 sets the mode of its data files itself (they hold
+# passwords and are private unless the "data file mode" setting says otherwise)
+find /data/htdocs -path /data/htdocs/db -prune -o -type f -exec chmod 0644 {} \;
+find /data/htdocs -path /data/htdocs/db -prune -o -type d -exec chmod 0755 {} \;
 
-# Write temp files by nginx
-chmod 777 /tmp
+# Write temp files by all
+chmod 0777 /tmp
 
 # Check runs started from the web interface or the API run as the nginx user, and only root may
 # write to the container's output. They write to this file instead (see log.output in config.php),

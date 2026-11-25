@@ -7,13 +7,22 @@ updates:
       interval: "daily"
 
   # Configuration for Dockerfile
+  # Dependabot supports a single target branch per entry,
+  # so each branch to be updated needs its own entry
   - package-ecosystem: "docker"
     directory: "/"
-    allow-branches:
-      - "master"
-      - "alpine-3.2x"
-      - "beta"
-    ignore-branches:
-      - "legacy"
+    target-branch: "master"
     schedule:
-      interval: "daily"
+      interval: "cron"
+      cronjob: "0 */6 * * *"
+    cooldown:
+      default-days: 1
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    target-branch: "beta"
+    schedule:
+      interval: "cron"
+      cronjob: "0 */6 * * *"
+    cooldown:
+      default-days: 1
